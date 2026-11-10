@@ -1,0 +1,122 @@
+{
+  "source_id": "internal.traffic.hourly_counts",
+  "kind": "internal",
+  "title": "Road traffic counts (hourly), Mobility Office",
+  "summary": "Hourly vehicle counts per road counter (counter_id, ts_local, vehicles), described in the catalog as counted near the monitoring stations. Catalog metadata states about 15 million rows, coverage from 2021-01-01 with no end date, and hourly refresh (last refreshed 2026-10-12). A wiki page records that the road counters were replaced on 2024-03-18 and counting changed from per-direction to both-directions combined, which the catalog does not mention. Counter-to-station mapping and direction fields are not documented in the catalog.",
+  "schema": {
+    "documented": "structured",
+    "field_count": 3,
+    "fields": [
+      {
+        "name": "counter_id",
+        "type": "string",
+        "description": "Road counter code",
+        "pii": false
+      },
+      {
+        "name": "ts_local",
+        "type": "timestamp",
+        "description": "Hour start, local time (time zone not stated)",
+        "pii": false,
+        "unit": "local time"
+      },
+      {
+        "name": "vehicles",
+        "type": "integer",
+        "description": "Vehicles counted in the hour",
+        "pii": false,
+        "unit": "vehicles per hour"
+      }
+    ],
+    "notes": "No direction field in the catalog schema, although the wiki says counts were per direction before 2024-03-18 and both directions combined after. No counter location or station-link field."
+  },
+  "temporal": {
+    "start": "2021-01-01",
+    "end": null,
+    "grain": "hourly",
+    "metadata_last_updated": "2026-10-12",
+    "open_ended": true,
+    "refresh_cadence": "hourly (catalog refresh_cadence field; no stated lag)"
+  },
+  "spatial": {
+    "coverage": [
+      "IT"
+    ],
+    "code_system": "counter_id codes (no documented mapping to coordinates, roads or monitoring stations)",
+    "notes": "Country is from the use-case geography; the catalog does not state a location beyond an Azure storage path. Distance from each counter to each monitoring station is not documented."
+  },
+  "ownership": {
+    "owner": "Mobility Office",
+    "publisher": null,
+    "steward": "Luca Ferri"
+  },
+  "licence": {
+    "name": "internal",
+    "evidence": "get_catalog_entry internal.traffic.hourly_counts: classification 'internal'; no licence field present in the catalog entry",
+    "url": null,
+    "commercial_use": "not_applicable",
+    "attribution_text": null,
+    "agreement_status": null,
+    "mixed_sources": false
+  },
+  "access": {
+    "method": "warehouse_sql",
+    "auth_required": true,
+    "reachable": null,
+    "request_process": "Request to the Mobility Office (catalog access.request_process). Data access was not tested; only catalog and wiki metadata were read.",
+    "classification": "internal",
+    "approx_size_bytes": null
+  },
+  "declared_metadata": {
+    "contains_pii": false,
+    "classification": "internal",
+    "status": "active",
+    "grain": "hourly",
+    "row_count_approx": 15000000,
+    "refresh_cadence": "hourly"
+  },
+  "documentation_excerpts": [
+    "Catalog description: 'Vehicles counted per hour by road counters near the monitoring stations.'",
+    "Wiki counter_replacement_2024 (last_edited 2024-04-02): 'On 2024-03-18 the road counters were replaced.'",
+    "Wiki counter_replacement_2024: 'Before that date, counts were recorded per direction. From 2024-03-18, counts are both directions combined.'",
+    "Wiki counter_replacement_2024: 'Do not compare counts across the change without adjusting for it. The catalog entry for traffic.hourly_counts has no note about this.'"
+  ],
+  "quality_notes": [
+    "Series break: wiki counter_replacement_2024 (last_edited 2024-04-02) says counters were replaced on 2024-03-18 and counting changed from per-direction to both-directions combined. The catalog entry (exported 2026-10-14) has no note, and its temporal_coverage starts 2021-01-01, so the pre-break and post-break regimes sit in one table with no flag. The production window (2024-01-01 to 2025-12-31) straddles the break, so about 2.5 months of 2024 are on the old basis.",
+    "Catalog schema has no direction field, so the counting basis cannot be identified per row from the table alone. Counter-level or timestamp-level filtering on the change date would need confirmation from the Mobility Office.",
+    "Catalog vs wiki on currency: catalog says last_refreshed 2026-10-12 and refresh hourly; the wiki was last edited 2024-04-02. The wiki may be out of date for any later counter changes, which is unknown.",
+    "Time zone: ts_local is described as local time with no zone or DST handling stated. Alignment with UTC-based air-quality data needs a documented conversion.",
+    "Counter-to-station mapping is not documented; the catalog only says counters are 'near the monitoring stations'. Distances are unknown.",
+    "Gaps, outages, counting method and validation are not documented.",
+    "Restrictions or lockdown-type regime changes in 2024-2025 are not flagged in the catalog or wiki pages read; this was not checked further.",
+    "Row count is approximate (about 15,000,000); size in bytes is not stated."
+  ],
+  "provenance": [
+    {
+      "claim": "Catalog fields: owner Mobility Office, steward Luca Ferri, status active, classification internal, grain hourly, coverage start 2021-01-01 with end null, refresh hourly, last_refreshed 2026-10-12, row_count_approx 15000000, access warehouse_sql with request to Mobility Office.",
+      "evidence": "get_catalog_entry internal.traffic.hourly_counts"
+    },
+    {
+      "claim": "Columns are counter_id (string), ts_local (timestamp, hour start local time), vehicles (integer); none is marked PII.",
+      "evidence": "get_catalog_entry internal.traffic.hourly_counts (columns)"
+    },
+    {
+      "claim": "Counters were replaced on 2024-03-18; counts changed from per-direction to both directions combined; the catalog has no note on this.",
+      "evidence": "read_wiki_page counter_replacement_2024 (last_edited 2024-04-02)"
+    },
+    {
+      "claim": "The wiki is listed as the only backlink to the catalog entry.",
+      "evidence": "get_catalog_entry internal.traffic.hourly_counts (wiki_backlinks: counter_replacement_2024)"
+    }
+  ],
+  "unknowns": [
+    "Counter locations, road names, and distance to each monitoring station",
+    "Counting method, accuracy and outage or gap history",
+    "Whether per-direction data before 2024-03-18 can be combined to match the new basis, and how",
+    "Time zone and DST handling for ts_local",
+    "Restriction, lockdown or traffic-policy changes in 2024-2025",
+    "Whether any other counter changes occurred after 2024-04-02 (wiki not updated since)",
+    "Licence or data-sharing terms beyond internal classification",
+    "Data size in bytes and actual row count; data access not tested"
+  ]
+}

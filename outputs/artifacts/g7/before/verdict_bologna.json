@@ -1,0 +1,8 @@
+{
+  "verdict": "not_feasible",
+  "red_flags": [
+    "LIC-UNKNOWN",
+    "COV-PARTIAL-WINDOW",
+    "COV-GEO-MISMATCH"
+  ]
+}

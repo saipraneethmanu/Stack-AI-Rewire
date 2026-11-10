@@ -1,0 +1,24 @@
+{
+  "decisions": [
+    {
+      "url": "https://archive.ics.uci.edu/dataset/360/air+quality",
+      "decision": "accept",
+      "reason": "Hourly reference NO2(GT) readings for an Italian city, 10 Mar 2004 to 4 Apr 2005, which is the whole prototype window. CC BY 4.0 is stated on the page. No PM2.5 column, so it fills N1 for NO2 only."
+    },
+    {
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sdg_11_52?format=JSON&lang=EN&geo=IT",
+      "decision": "accept",
+      "reason": "Eurostat annual PM2.5 premature deaths for Italy, updated 9 Dec 2025, reuse under CC BY 4.0 per the copyright notice. Accepted only as national context for N6. Series runs 2005 to 2023 with 2006 absent, so it does not reach the production window."
+    },
+    {
+      "url": "https://catalog.data.gov/dataset/open-air-chicago-hour-aggregations",
+      "decision": "accept",
+      "reason": "Accepted on purpose so the pipeline records the catalog.data.gov refusal. It is a Chicago dataset and I will not use it for Valdena, and its host stays off the allowlist."
+    },
+    {
+      "url": "https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2024/",
+      "decision": "accept",
+      "reason": "Revised to N2 production at Step 2b. Hourly per-counter vehicle counts for Bologna, 2024 only. Different city from Valdena, so accepted only to test the traffic path and not as client traffic."
+    }
+  ]
+}

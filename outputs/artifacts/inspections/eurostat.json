@@ -1,0 +1,104 @@
+{
+  "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sdg_11_52?format=JSON&lang=EN&geo=IT",
+  "canonical_ref": "ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sdg_11_52?format=JSON&geo=IT&lang=EN",
+  "source_id": "link.europa_sdg_11_52_099aa6",
+  "resolved_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sdg_11_52?format=JSON&lang=EN&geo=IT",
+  "status": 200,
+  "content_type": "application/json",
+  "content_length_header": "5827",
+  "last_modified_header": null,
+  "link_type": "json_stat",
+  "summary": {
+    "label": "Premature deaths due to exposure to fine particulate matter (PM2.5)",
+    "updated": "2025-12-09T11:00:00+0100",
+    "source": "ESTAT",
+    "dimensions": [
+      {
+        "id": "freq",
+        "size": 1,
+        "labels": [
+          "A: Annual"
+        ]
+      },
+      {
+        "id": "airpol",
+        "size": 1,
+        "labels": [
+          "PM2_5: Particulates < 2.5µm"
+        ]
+      },
+      {
+        "id": "effect",
+        "size": 1,
+        "labels": [
+          "PMD: Premature death"
+        ]
+      },
+      {
+        "id": "unit",
+        "size": 2,
+        "labels": [
+          "NR: Number",
+          "RT: Rate"
+        ]
+      },
+      {
+        "id": "geo",
+        "size": 1,
+        "labels": [
+          "IT: Italy"
+        ]
+      },
+      {
+        "id": "time",
+        "size": 18,
+        "labels": [
+          "2005: 2005",
+          "2007: 2007",
+          "2008: 2008",
+          "2009: 2009",
+          "2010: 2010",
+          "2011: 2011",
+          "2012: 2012",
+          "2013: 2013",
+          "2014: 2014",
+          "2015: 2015"
+        ]
+      }
+    ],
+    "time": {
+      "first": "2005",
+      "last": "2023",
+      "values": [
+        "2005",
+        "2007",
+        "2008",
+        "2009",
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023"
+      ]
+    },
+    "geo_codes": [
+      "IT"
+    ],
+    "expected_cells": 36,
+    "value_count": 36,
+    "missing_cells": 0,
+    "status_counts": {},
+    "warnings": [
+      "TIME_GAPS"
+    ]
+  }
+}

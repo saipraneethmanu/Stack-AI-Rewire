@@ -1,0 +1,386 @@
+{
+  "assessments": [
+    {
+      "source_id": "api.open_meteo_archive",
+      "verdict": "feasible_with_conditions",
+      "red_flags": [
+        {
+          "code": "LIC-NONCOMMERCIAL",
+          "evidence": "Rule flag (blocker). terms page: 'You may only use the free API services for non-commercial purposes'; commercial use needs paid Standard/Professional/Enterprise subscription. Register lists production as approved purpose with agreement_status not_required_open_data, which conflicts with the terms page.",
+          "severity": "blocker"
+        },
+        {
+          "code": "LIC-MIXED",
+          "evidence": "Rule flag (major). Licence record: underlying Copernicus C3S/ECMWF reanalysis products carry their own licence terms per the licence page.",
+          "severity": "major"
+        },
+        {
+          "code": "GOV-CATALOG-WIKI-CONFLICT",
+          "evidence": "Candidate note says register default is Lisbon (38.72, -9.14); register and probes show 45.46 / 9.19 (Milan area). Record both. Location for Valdena is not set.",
+          "severity": "major"
+        },
+        {
+          "code": "COV-PARTIAL-WINDOW",
+          "evidence": "Only 2004-03-10..2004-03-12 and 2025-12-29..2025-12-31 probed; 2005-04-04 end and 2024-01-01 start not probed (quality_notes). Full-window coverage not confirmed.",
+          "severity": "minor"
+        },
+        {
+          "code": "INT-REPRESENTATIVENESS",
+          "evidence": "Modelled ~10 km grid cell (138 m elevation), not a station observation; urban smoothing vs city monitoring stations unassessed (quality_notes).",
+          "severity": "minor"
+        }
+      ],
+      "conditions": [
+        "Legal written decision (before any production use) that the Valdena Civic Health Office's live clinical warning use is permitted under the free non-commercial terms, OR purchase a paid Standard/Professional/Enterprise subscription. Until then, use is limited to the prototype window.",
+        "Record the Valdena location as a human-justified assumption in decisions.md (not the register default 45.46/9.19 or the Lisbon note); the chosen point must be near the monitoring stations.",
+        "Attribution on outputs: 'Weather data by Open-Meteo.com'; cite Zippenfenig, P. (2023), doi 10.5281/ZENODO.7970649; check the upstream Copernicus/ECMWF terms in Legal review.",
+        "Probe and confirm hourly temperature_2m and relative_humidity_2m for the full prototype window (to 2005-04-04) and production window start (2024-01-01) before the pull; use a staged download.",
+        "Align the UTC time base with the station and traffic sources before joining."
+      ],
+      "rationale": "Only register source for N3 with coverage of both windows. Probes confirmed hourly temperature and humidity at both ends of each window. The blocker LIC-NONCOMMERCIAL can be cleared by Legal (a decision on whether the client's use qualifies, or a paid subscription), so it is a conditional rather than a rule-1 blocker. Full window coverage and location are not yet confirmed, and the modelled grid is not station data. The internal vendor alternative for N3 is not feasible, so this is the only usable N3 path.",
+      "who_can_resolve": [
+        "Valdena Legal / Office of the Legal Counsel",
+        "Valdena Civic Health Office (location decision in decisions.md)",
+        "Data pipeline team (window probes, staged pull)"
+      ],
+      "dismissed_rule_flags": []
+    },
+    {
+      "source_id": "internal.airq.station_readings",
+      "verdict": "feasible_with_conditions",
+      "red_flags": [
+        {
+          "code": "ACC-RESTRICTED",
+          "evidence": "Rule flag (major). auth_required true; classification internal; access by request to the Environment Monitoring Unit; location azure://valdena-health/env/station_readings.",
+          "severity": "major"
+        },
+        {
+          "code": "GOV-CATALOG-WIKI-CONFLICT",
+          "evidence": "Wiki station_network (last_edited 2024-07-01): station VR-03 switched off 2024-06-30 and 'catalog still lists the network as active'. Catalog (last_refreshed 2026-10-14) still shows status active with no VR-03 note.",
+          "severity": "major"
+        },
+        {
+          "code": "DQ-SENTINEL-VALUES",
+          "evidence": "No documentation of null or missing-value coding for the table (catalog notes: 'Null handling, missing-value coding and station list are not documented'). Unverified; no sample was taken.",
+          "severity": "minor"
+        }
+      ],
+      "conditions": [
+        "Request access from the Environment Monitoring Unit (steward Giulia Rossi) for the 2024-01-01 to 2025-12-31 extract; the access request is the step that clears ACC-RESTRICTED.",
+        "Get written confirmation of the active station list and whether VR-03 has no readings after 2024-06-30; treat the VR-03 gap as missing, not zero.",
+        "Ask the EMU for the missing-value coding and the per-station and per-pollutant completeness for 2024-2025 before modelling.",
+        "Confirm whether 2026 values are provisional and exclude them or flag them; the production window ends 2025-12-31.",
+        "Usable for N1 production only; it cannot serve the prototype window (starts 2023-01-01)."
+      ],
+      "rationale": "The only internal source of hourly NO2 and PM2.5 for the production window, and its catalog coverage (from 2023-01-01, open-ended) fully spans the window. Access is restricted but has a clear path through the Environment Monitoring Unit. The wiki/catalog conflict over VR-03 needs confirmation. There is no station-to-district or coordinate mapping, so joins to weather, traffic or clinic data need a station geography table.",
+      "who_can_resolve": [
+        "Environment Monitoring Unit (steward Giulia Rossi)",
+        "Valdena Civic Health Office data owner for the station list"
+      ],
+      "dismissed_rule_flags": []
+    },
+    {
+      "source_id": "internal.clinic.resp_visits_daily",
+      "verdict": "feasible_with_conditions",
+      "red_flags": [
+        {
+          "code": "ACC-RESTRICTED",
+          "evidence": "Rule flag (major). auth_required true; classification internal; access by request to Clinical Analytics.",
+          "severity": "major"
+        },
+        {
+          "code": "GOV-PURPOSE-LIMITATION",
+          "evidence": "Wiki clinic_data_policy (owner Data Protection Office, last_edited 2025-02-01): 'Only daily counts by district (clinic.resp_visits_daily) may be used for this purpose.' Patient postcode and age band must not leave clinic systems.",
+          "severity": "major"
+        },
+        {
+          "code": "INT-NO-JOIN-KEY",
+          "evidence": "district is free text, not stated as ISTAT or another standard code; no station-to-district mapping in internal.airq.station_readings (catalog: 'no coordinates or district field').",
+          "severity": "major"
+        },
+        {
+          "code": "DQ-UNDOCUMENTED-SCHEMA",
+          "evidence": "No ICD-10 case definition, no visit-vs-registration date definition, no zero-day convention documented (quality_notes).",
+          "severity": "minor"
+        }
+      ],
+      "conditions": [
+        "Obtain written confirmation from the Data Protection Office that the warning model use is within 'this surveillance purpose' for daily district counts; use only daily district counts, never patient-level data.",
+        "Request access from Clinical Analytics (ACC-RESTRICTED clearance).",
+        "Document the respiratory case definition, the visit-vs-registration date rule, and the zero-day convention before analysis.",
+        "Agree a district code scheme and a station-to-district mapping (for example ISTAT codes via a GIS table) so that district counts can join to air data.",
+        "Confirm small-cell suppression rules before sharing any district counts outside Clinical Analytics."
+      ],
+      "rationale": "Daily district counts are the only clinic dataset the policy allows, and its coverage (from 2022-01-01, open-ended) fully spans the production window. Access, purpose limitation and the missing join key are each major flags with a resolution path, so the source is conditionally feasible for N4 (should) only. It does not serve N5 (patient records are excluded by policy).",
+      "who_can_resolve": [
+        "Data Protection Office (purpose limitation)",
+        "Clinical Analytics (access and case definitions)",
+        "Environment Monitoring Unit with GIS / ISTAT code table owner (district mapping)"
+      ],
+      "dismissed_rule_flags": []
+    },
+    {
+      "source_id": "internal.traffic.hourly_counts",
+      "verdict": "feasible_with_conditions",
+      "red_flags": [
+        {
+          "code": "ACC-RESTRICTED",
+          "evidence": "Rule flag (major). auth_required true; classification internal; access by request to the Mobility Office; access not tested.",
+          "severity": "major"
+        },
+        {
+          "code": "GOV-CATALOG-WIKI-CONFLICT",
+          "evidence": "Wiki counter_replacement_2024 (last_edited 2024-04-02): counters replaced 2024-03-18; counts changed from per-direction to both-directions combined; 'Do not compare counts across the change without adjusting for it.' Catalog entry (exported 2026-10-14) has no note; schema has no direction field.",
+          "severity": "major"
+        },
+        {
+          "code": "INT-NO-JOIN-KEY",
+          "evidence": "Catalog: 'counter_id codes (no documented mapping to coordinates, roads or monitoring stations)'; 'Distance from each counter to each monitoring station is not documented.'",
+          "severity": "major"
+        },
+        {
+          "code": "DQ-DST-ARTEFACTS",
+          "evidence": "ts_local is 'local time (time zone not stated)'; no DST handling documented.",
+          "severity": "minor"
+        }
+      ],
+      "conditions": [
+        "Request access from the Mobility Office (steward Luca Ferri) for 2024-01-01 to 2025-12-31.",
+        "Get the counter-to-station mapping and distances from the Mobility Office before using traffic as a station-level feature.",
+        "Handle the 2024-03-18 break: confirm the counting basis per row and either split the series or adjust pre-break per-direction counts to the combined basis; about 2.5 months of 2024 are on the old basis.",
+        "Confirm the time zone of ts_local and convert to UTC with a documented DST rule before joining to UTC air data.",
+        "Confirm with the Mobility Office whether any counter changes occurred after 2024-04-02 (wiki not updated since)."
+      ],
+      "rationale": "The only internal source of hourly vehicle counts for Valdena, and its coverage (from 2021-01-01, open-ended) spans the production window. It has three major issues (access, a catalog-wiki series break, no counter-to-station mapping), each with a Mobility Office resolution path. It is feasible with conditions for N2 production.",
+      "who_can_resolve": [
+        "Mobility Office (steward Luca Ferri)",
+        "Environment Monitoring Unit or GIS team (counter-to-station mapping)"
+      ],
+      "dismissed_rule_flags": []
+    },
+    {
+      "source_id": "link.bologna_rilevazione_flusso_veico_a104f7",
+      "verdict": "not_feasible",
+      "red_flags": [
+        {
+          "code": "COV-PARTIAL-WINDOW",
+          "evidence": "Rule flag (major). Covers 2024-01-01..2024-12-31 only; production window 2024-2025 is 50% covered (rule evidence).",
+          "severity": "major"
+        },
+        {
+          "code": "COV-GEO-MISMATCH",
+          "evidence": "Title and summary: 'Comune di Bologna'; 'This is a Bologna source, not Valdena client traffic'; geography section: 'City of Bologna only. Not in the Valdena client geography.'",
+          "severity": "major"
+        },
+        {
+          "code": "DQ-UNDOCUMENTED-SCHEMA",
+          "evidence": "schema documented 'free_text_only'; field names taken from portal description only; types, units and value sets unknown; data file not reachable.",
+          "severity": "major"
+        },
+        {
+          "code": "LIC-ATTRIBUTION",
+          "evidence": "Rule flag (minor). Licence CC BY 4.0 requires attribution.",
+          "severity": "minor"
+        }
+      ],
+      "conditions": [],
+      "rationale": "Different city (Bologna) from the client's Valdena monitoring stations, so it cannot serve N2 for the client. It also covers only 2024 (half the production window), and its schema is free-text only with no data file sampled. Three major flags with no path to convert it into Valdena data make it not feasible. It may be used only as a pipeline test with no reading as client traffic, which is outside the need.",
+      "who_can_resolve": [],
+      "dismissed_rule_flags": []
+    },
+    {
+      "source_id": "link.data_open_air_chicago_hour_aggre_d4970b",
+      "verdict": "not_feasible",
+      "red_flags": [
+        {
+          "code": "LIC-UNKNOWN",
+          "evidence": "Rule flag (blocker). No licence obtained: inspect_dataset_link on catalog.data.gov returned DOMAIN_NOT_ALLOWLISTED.",
+          "severity": "blocker"
+        },
+        {
+          "code": "ACC-UNREACHABLE",
+          "evidence": "Rule flag (blocker). inspect_dataset_link returned DOMAIN_NOT_ALLOWLISTED for catalog.data.gov; contents, period and geography unverified.",
+          "severity": "blocker"
+        },
+        {
+          "code": "COV-GEO-MISMATCH",
+          "evidence": "Title 'open-air-chicago-hour-aggregations'; geography note: 'a US city would not match the primary geography unless stated otherwise'; use case geography is IT.",
+          "severity": "major"
+        },
+        {
+          "code": "DQ-UNDOCUMENTED-SCHEMA",
+          "evidence": "schema documented 'none'; fields empty; grain and coverage unknown.",
+          "severity": "major"
+        }
+      ],
+      "conditions": [],
+      "rationale": "Unreachable host, unknown licence and a probable US city geography. No window overlap can be checked. Clearing the allowlist would not resolve the geography mismatch, and the guardrail prohibits seeking another route. Not feasible for N1 prototype.",
+      "who_can_resolve": [],
+      "dismissed_rule_flags": []
+    },
+    {
+      "source_id": "link.europa_sdg_11_52_099aa6",
+      "verdict": "not_feasible",
+      "red_flags": [
+        {
+          "code": "COV-PARTIAL-WINDOW",
+          "evidence": "Rule flag (major). Source covers 2005-01-01..2023-12-31; coverage below 95% (production 0%, prototype 24%). Production window has no data; prototype overlaps only 2005 (about 3 of 13 months, under half).",
+          "severity": "major"
+        },
+        {
+          "code": "LIC-UNKNOWN",
+          "evidence": "Rule flag (blocker). No licence statement found; copyright page returned 404; not in external register.",
+          "severity": "blocker"
+        },
+        {
+          "code": "DQ-METADATA-CONTRADICTION",
+          "evidence": "Not raised by rule. Note: TIME_GAPS warning and missing 2006 time value while expected_cells=36 with missing_cells=0 (declared_metadata). Recorded for awareness only.",
+          "severity": "minor"
+        }
+      ],
+      "conditions": [],
+      "rationale": "Annual national PM2.5 deaths context. Production has no overlap and the prototype has under half coverage, so both windows fail on coverage alone. The licence is also unknown. It is a could-priority need (N6), so this does not affect the overall verdict.",
+      "who_can_resolve": [],
+      "dismissed_rule_flags": []
+    },
+    {
+      "source_id": "link.uci_360",
+      "verdict": "feasible_with_conditions",
+      "red_flags": [
+        {
+          "code": "DQ-METADATA-CONTRADICTION",
+          "evidence": "Rule flag (major). Metadata has_missing_values='no' but documentation says 'Missing values are tagged with -200 value.' Sample: -200 in every numeric column except Date and Time; C6H6(GT) min -200 with 366 negative values.",
+          "severity": "major"
+        },
+        {
+          "code": "LIC-ATTRIBUTION",
+          "evidence": "Rule flag (minor). UCI licence field CC BY 4.0; attribution: cite De Vito et al., Sens. and Act. B, Vol. 129, 2, 2008; DOI 10.24432/C59K5F.",
+          "severity": "minor"
+        },
+        {
+          "code": "LIC-MIXED",
+          "evidence": "Judgement (major). Licence conflict: UCI licence field says CC BY 4.0 while the dataset notes say 'used exclusively for research purposes. Commercial purposes are fully excluded.' Commercial use recorded as unknown.",
+          "severity": "major"
+        },
+        {
+          "code": "INT-REPRESENTATIVENESS",
+          "evidence": "Judgement (major). One unnamed road-level device in one unnamed Italian city, one year; 'The device was located on the field in a significantly polluted area'.",
+          "severity": "major"
+        },
+        {
+          "code": "DQ-SENTINEL-VALUES",
+          "evidence": "-200 is the missing code documented in the source notes (condition: treat as missing). C6H6(GT) has no sentinel detected by profiler, but its min is -200.",
+          "severity": "minor"
+        }
+      ],
+      "conditions": [
+        "Covered dates: 2004-03-10 to 2005-04-04 (whole file, 9,357 rows). Prototype window only; this source cannot serve the production window.",
+        "Treat every -200 value as missing, never as a measurement, in all numeric columns including C6H6(GT) and NMHC(GT); NMHC(GT) is about 90% missing.",
+        "Legal written decision that the research-only restriction (commercial use excluded) permits the prototype use, given the conflicting CC BY 4.0 licence field; no production use without that decision.",
+        "Use the cited attribution text (De Vito et al. 2008; DOI 10.24432/C59K5F) in any output.",
+        "Limit conclusions to a method build: one road-level device in one city, not city-wide representativeness. Treat the sensor-response columns as uncalibrated (documented cross-sensitivity and drift). Note the notes-vs-data date conflict (February vs 2005-04-04)."
+      ],
+      "rationale": "The only candidate that covers the whole prototype window for hourly pollutants (NO2 reference, NOx, and CO/NMHC/benzene) and for temperature and humidity. Its FRS-STALE flag is dismissed (see dismissed list). The -200 sentinel is documented, so the cleaning rule is feasible. The licence conflict and single-site representativeness need conditions. It covers no PM2.5 and reference pollutant gaps are substantial, so it is usable only for the prototype method.",
+      "who_can_resolve": [
+        "Valdena Legal (licence conflict)",
+        "Data pipeline team (-200 cleaning rule)",
+        "Analysis team (scope of the prototype claims)"
+      ],
+      "dismissed_rule_flags": [
+        {
+          "code": "FRS-STALE",
+          "reason": "target window is historical and fully covered: the prototype window (2004-03-10 to 2005-04-04) ends before the as-of date 2026-10-15 and the source covers it fully."
+        }
+      ]
+    },
+    {
+      "source_id": "vendor.atmosdata_pro",
+      "verdict": "not_feasible",
+      "red_flags": [
+        {
+          "code": "LIC-AGREEMENT-NOT-ACTIVE",
+          "evidence": "Rule flag (blocker). agreement_status 'expired; contract AD-2021-114 ended 2025-12-31; renewal pending with Procurement, not signed'; approved_purposes [].",
+          "severity": "blocker"
+        },
+        {
+          "code": "LIC-UNKNOWN",
+          "evidence": "Rule flag (blocker). No licence text; no terms_url in the register.",
+          "severity": "blocker"
+        },
+        {
+          "code": "ACC-UNREACHABLE",
+          "evidence": "Rule flag (blocker). API key revoked 2026-01-01; reachable false.",
+          "severity": "blocker"
+        },
+        {
+          "code": "ACC-RESTRICTED",
+          "evidence": "Rule flag (major). Requires a signed renewal from Procurement, a new API key and Legal sign-off.",
+          "severity": "major"
+        },
+        {
+          "code": "DQ-UNDOCUMENTED-SCHEMA",
+          "evidence": "Judgement (major). schema documented 'none'; no docs_url; coverage 'unknown'; station locations unknown.",
+          "severity": "major"
+        }
+      ],
+      "conditions": [],
+      "rationale": "Blockers that depend on a Procurement renewal decision outside this project, with no approved purposes and no documentation of schema or geography. The source is also superseded for N3 production by open-meteo (which is conditionally feasible) and by the production-window path. Not feasible unless a renewal is signed, and the schema and geography are first documented.",
+      "who_can_resolve": [
+        "Procurement (renewal decision, outside project scope)"
+      ],
+      "dismissed_rule_flags": []
+    }
+  ],
+  "overall_verdict": "feasible_with_conditions",
+  "overall_rationale": "The three must needs are each met with conditions. N1 (hourly pollutants) has the UCI prototype file (conditional on -200 cleaning, licence-conflict decision and single-site scope) and the EMU station readings for production (conditional on access and station-list confirmation). N2 (traffic) rests on the Mobility Office counts for production, conditional on access, the 2024-03-18 counter-change break and a counter-to-station mapping. N3 (temperature and humidity) rests on Open-Meteo for both windows, conditional on a Legal decision because the free tier is non-commercial. The Bologna traffic, Chicago, Eurostat and vendor sources are not feasible. N5 (patient records) has no usable source and is barred by policy. N6 (national deaths) is not feasible on coverage. Both are could-priority needs, so the overall verdict is not driven by them.",
+  "need_coverage": [
+    {
+      "need_id": "N1",
+      "status": "met_with_conditions",
+      "best_sources": [
+        "link.uci_360",
+        "internal.airq.station_readings"
+      ],
+      "gap": "Prototype relies on a single road-level device with sparse reference values and no PM2.5; production depends on EMU access and an unconfirmed station list (VR-03)."
+    },
+    {
+      "need_id": "N2",
+      "status": "met_with_conditions",
+      "best_sources": [
+        "internal.traffic.hourly_counts"
+      ],
+      "gap": "Counts straddle the 2024-03-18 counting change and there is no counter-to-station mapping; Bologna counts cannot substitute for Valdena traffic."
+    },
+    {
+      "need_id": "N3",
+      "status": "met_with_conditions",
+      "best_sources": [
+        "api.open_meteo_archive",
+        "link.uci_360"
+      ],
+      "gap": "Open-Meteo is a 10 km modelled grid, its free-tier use is non-commercial, and full-window coverage at both ends is not yet probed; the vendor feed is not usable."
+    },
+    {
+      "need_id": "N4",
+      "status": "met_with_conditions",
+      "best_sources": [
+        "internal.clinic.resp_visits_daily"
+      ],
+      "gap": "Access, purpose confirmation and a district-to-station join key are required; case definition and zero-day convention are undocumented."
+    },
+    {
+      "need_id": "N5",
+      "status": "unmet",
+      "best_sources": [],
+      "gap": "No candidate source; clinic policy only allows daily district counts, so patient-level records are not available for this purpose."
+    },
+    {
+      "need_id": "N6",
+      "status": "unmet",
+      "best_sources": [
+        "link.europa_sdg_11_52_099aa6"
+      ],
+      "gap": "Eurostat series ends 2023 (production 0% covered, prototype about 24%) and its licence is unknown."
+    }
+  ]
+}

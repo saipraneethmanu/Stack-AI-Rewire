@@ -1,0 +1,51 @@
+The most comprehensive, continuously updated public dataset matching your criteria is provided by **ARPA Lombardia** (the Environmental Protection Agency of Lombardia) covering the **Metropolitan City of Milan** and surrounding urban/regional areas in Northern Italy.
+
+---
+
+### 1. Dataset Overview
+
+* **Provider / Custodian:** ARPA Lombardia / Regione Lombardia.
+* **Network & Coverage:** Urban and peri-urban monitoring stations across the city network (e.g., central Milan stations like *Milano Brera, Milano Lambrate, Milano Juvara, Milano Zavattari*, etc.) as well as the wider regional network.
+* **Temporal Resolution:** Hourly observations (timestamped in Solar Time / UTC+1).
+* **Time Span:** Available continuously for 2024–2025 (historical annual archives + real-time/monthly rolling feeds).
+* **Observed Parameters:**
+  * **Temperature** (°C)
+  * **Relative Humidity** (%)
+  * **Wind Speed & Wind Direction** (m/s and degrees)
+  * *(Also includes global solar radiation, precipitation, atmospheric pressure, and peak wind gusts)*.
+
+---
+
+### 2. Licence
+
+* **Licence:** **Creative Commons CC0 1.0 Universal (Public Domain Dedication)** / Open Data.
+* **Usage Rights:** Public domain. You are free to copy, modify, distribute, and perform the work, even for commercial purposes, without asking permission.
+
+---
+
+### 3. Download Pages & Access Endpoints
+
+ARPA Lombardia publishes these feeds directly through the open data portal of Lombardy:
+
+1. **Main Meteorological Data Portal & Downloads:**
+   * **Catalog Hub:** [ARPA Lombardia - Dati di Monitoraggio (Dati.Lombardia.it)](https://www.dati.lombardia.it/stories/s/auv9-c2sj)
+   * **Rolling/Recent Sensor Dataset:** [Dati sensori meteo (Open Data Regione Lombardia)](https://www.dati.lombardia.it/Ambiente/Dati-sensori-meteo/647i-nhxk)
+     * Offers instant export in **CSV, JSON, XML**, and programmatic access via the **Socrata Open Data API (SODA) / OData**.
+
+2. **Annual Historical Archives (2024–2025):**
+   * Archived yearly files for previous and validated years are indexed directly under the [Dati di monitoraggio repository](https://www.dati.lombardia.it/stories/s/auv9-c2sj) split by year (e.g., *2024*, *2025*).
+
+3. **Station Metadata & Geographic Locations:**
+   * **Stations & Sensor Registry:** [Stazioni e Sensori ARPA Lombardia](https://www.dati.lombardia.it/d/nf78-nj6b)
+   * Contains exact latitude, longitude, elevation, sensor IDs, and station names (such as the Milano urban stations) to map the IDs from the weather observations file.
+
+4. **Interactive Custom Extraction Tool (Alternative):**
+   * **ARPA Lombardia Automatic Data Request Tool:** [ARPA Lombardia - Richiesta Dati Misurati](https://www.arpalombardia.it/temi-ambientali/meteo-e-clima/richiesta-dati-misurati/)
+   * Allows querying specific individual city stations (e.g., *Milano - Via Juvara* or *Milano - Brera*) and downloading specific multi-parameter CSVs for 2024–2025 directly.
+
+Citations:
+regione.lombardia.it | https://trasformazionedigitale.regione.lombardia.it/wps/portal/site/trasformazionedigitale/dettaglioavviso/patrimonio-informativo-pubblico/open-data/dati-arpa-lombardia
+comune.milano.it | UNRESOLVED redirect, open it yourself: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEb-bQfJZIqaVyECkwxceLbDmmJyrgsRGlv_J_xPV4IeYqmpY6N9zgHhtTWpdAhy_hiMdmPc0JcWyqjwD1ogVrlDJ8374xb8ceK2rAXtQHBJ57ccv6Re6f1eZMJXiJTEVEJsYiA0__Oc3nXDwYrMbV2tlwcaQo89C7I-37y-7pUgU7DEC8Q
+dati.lombardia.it | https://www.dati.lombardia.it/stories/s/Meteo-inquinamento-aria-e-acqua-e-altri-dati-da-AR/auv9-c2sj/
+arpalombardia.it | https://www.arpalombardia.it/temi-ambientali/meteo-e-clima/form-richiesta-dati/
+dati.lombardia.it | https://www.dati.lombardia.it/Ambiente/Dati-sensori-meteo/647i-nhxk

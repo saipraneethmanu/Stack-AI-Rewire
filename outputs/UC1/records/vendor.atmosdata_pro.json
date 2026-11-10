@@ -1,0 +1,97 @@
+{
+  "source_id": "vendor.atmosdata_pro",
+  "kind": "vendor_feed",
+  "title": "AtmosData Pro station-grade weather feed (fictional vendor)",
+  "summary": "Vendor weather-observation feed (endpoint https://api.atmosdata.example/v2/observations) registered for UC1 as a station-grade source of temperature and humidity (N3) for the production window. The contract AD-2021-114 covered 2022-01-01 to 2025-12-31 and has ended with no signed renewal; the API key was revoked on 2026-01-01. Per the register no approved purposes exist, so the feed cannot be used. Not called, per vendor-feed rules; schema, grain and data coverage are unknown from the sources read.",
+  "schema": {
+    "documented": "none",
+    "fields": [],
+    "notes": "No docs_url or terms_url in the register; no schema documentation found in the catalog or wiki search."
+  },
+  "temporal": {
+    "start": null,
+    "end": "2025-12-31",
+    "grain": "unknown",
+    "metadata_last_updated": null,
+    "open_ended": false,
+    "refresh_cadence": null
+  },
+  "spatial": {
+    "coverage": [
+      "unknown"
+    ],
+    "code_system": null,
+    "notes": "No geographic coverage stated in the register or catalog. Endpoint is generic; station locations unknown."
+  },
+  "ownership": {
+    "owner": null,
+    "publisher": "AtmosData Pro (fictional vendor), per register title",
+    "steward": null
+  },
+  "licence": {
+    "name": null,
+    "evidence": "Register entry vendor.atmosdata_pro: agreement_status 'expired', agreement_detail 'Contract AD-2021-114 ran 2022-01-01 to 2025-12-31. Renewal is waiting on Procurement; no signed renewal on file.', approved_purposes []. No licence text available.",
+    "agreement_status": "expired; contract AD-2021-114 ended 2025-12-31; renewal pending with Procurement, not signed",
+    "attribution_text": null,
+    "commercial_use": "unknown",
+    "mixed_sources": null,
+    "url": null
+  },
+  "access": {
+    "method": "rest_api (vendor API key)",
+    "auth_required": true,
+    "reachable": false,
+    "classification": null,
+    "approx_size_bytes": null,
+    "request_process": "Not usable. Requires a signed renewal of AD-2021-114 from Procurement and a newly issued API key before any use. Production use also needs Legal sign-off per the open-data policy entry."
+  },
+  "declared_metadata": {
+    "agreement_status": "expired",
+    "approved_purposes": [],
+    "auth": "API key (revoked 2026-01-01)",
+    "docs_url": null,
+    "terms_url": null
+  },
+  "documentation_excerpts": [
+    "Contract AD-2021-114 ran 2022-01-01 to 2025-12-31. Renewal is waiting on Procurement; no signed renewal on file. (list_external_register)",
+    "auth: API key (revoked 2026-01-01) (list_external_register)",
+    "approved_purposes: [] (list_external_register)"
+  ],
+  "quality_notes": [
+    "Not usable: agreement expired and API key revoked, so access is blocked. Not called, as required for vendor feeds.",
+    "Candidate note said the feed is for the production window (2024-2025); the contract covered 2022-01-01 to 2025-12-31, so the contract covers that window but no approved purposes are recorded, and the agreement has since ended.",
+    "No data-level documentation (schema, units, sampling interval, station list, quality flags) was found."
+  ],
+  "sample_findings": [],
+  "provenance": [
+    {
+      "claim": "Agreement AD-2021-114 ran 2022-01-01 to 2025-12-31; no signed renewal on file; renewal awaiting Procurement.",
+      "evidence": "list_external_register, entry vendor.atmosdata_pro (agreement_detail)"
+    },
+    {
+      "claim": "Agreement status is 'expired' with approved_purposes empty.",
+      "evidence": "list_external_register, entry vendor.atmosdata_pro (agreement_status, approved_purposes)"
+    },
+    {
+      "claim": "API key revoked 2026-01-01; endpoint https://api.atmosdata.example/v2/observations; no docs_url or terms_url.",
+      "evidence": "list_external_register, entry vendor.atmosdata_pro (auth, endpoint, docs_url, terms_url)"
+    },
+    {
+      "claim": "No internal catalog entry exists for this feed.",
+      "evidence": "search_internal_catalog 'AtmosData Pro vendor weather observations feed agreement AD-2021-114' (no hits)"
+    },
+    {
+      "claim": "Production use of external datasets requires Legal sign-off; open-data policy does not cover vendor feeds.",
+      "evidence": "list_external_register, entry policy.open_data_links (notes)"
+    }
+  ],
+  "unknowns": [
+    "Data schema, variables, units and sampling interval (no documentation available).",
+    "Geographic coverage and station locations.",
+    "Actual data start and end dates (contract dates are not data dates).",
+    "Licence or terms of use (no terms_url).",
+    "Owner and steward inside the client organisation (Procurement contact not named).",
+    "Whether the vendor can provide a renewal and on what terms.",
+    "Whether any data from the 2022-2025 contract period was retained locally."
+  ]
+}

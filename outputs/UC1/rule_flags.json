@@ -1,0 +1,113 @@
+{
+  "flags": {
+    "api.open_meteo_archive": [
+      {
+        "code": "LIC-NONCOMMERCIAL",
+        "evidence": "Licence 'CC BY 4.0 (API data licence), with free API restricted to non-commercial use' restricts commercial use",
+        "raised_by": "rule:rule_licence"
+      },
+      {
+        "code": "LIC-MIXED",
+        "evidence": "Record states that parts come from upstream providers with different terms",
+        "raised_by": "rule:rule_licence"
+      }
+    ],
+    "internal.airq.station_readings": [
+      {
+        "code": "ACC-RESTRICTED",
+        "evidence": "auth_required=True, classification=internal, process='Request to the Environment Monitoring Unit (catalog access.request_process). Location recorded as azure://valdena-health/env/station_readings.'",
+        "raised_by": "rule:rule_access"
+      }
+    ],
+    "internal.clinic.resp_visits_daily": [
+      {
+        "code": "ACC-RESTRICTED",
+        "evidence": "auth_required=True, classification=internal, process='Request to Clinical Analytics'",
+        "raised_by": "rule:rule_access"
+      }
+    ],
+    "internal.traffic.hourly_counts": [
+      {
+        "code": "ACC-RESTRICTED",
+        "evidence": "auth_required=True, classification=internal, process='Request to the Mobility Office (catalog access.request_process). Data access was not tested; only catalog and wiki metadata were read.'",
+        "raised_by": "rule:rule_access"
+      }
+    ],
+    "link.bologna_rilevazione_flusso_veico_a104f7": [
+      {
+        "code": "LIC-ATTRIBUTION",
+        "evidence": "Licence 'CC BY 4.0' requires attribution",
+        "raised_by": "rule:rule_licence"
+      },
+      {
+        "code": "COV-PARTIAL-WINDOW",
+        "evidence": "Source covers 2024-01-01..2024-12-31; window coverage below 95% (production 50%)",
+        "raised_by": "rule:rule_temporal_coverage"
+      }
+    ],
+    "link.data_open_air_chicago_hour_aggre_d4970b": [
+      {
+        "code": "LIC-UNKNOWN",
+        "evidence": "No licence established. Evidence field: 'Not read: inspect_dataset_link on https://catalog.data.gov/dataset/open-air-chicago-hour-aggregations returned DOMAIN_NOT_ALLOWLISTED for host catalog.data.gov. No licence statement was obtained.'",
+        "raised_by": "rule:rule_licence"
+      },
+      {
+        "code": "ACC-UNREACHABLE",
+        "evidence": "Record states the source could not be reached or restored",
+        "raised_by": "rule:rule_access"
+      }
+    ],
+    "link.europa_sdg_11_52_099aa6": [
+      {
+        "code": "LIC-UNKNOWN",
+        "evidence": "No licence established. Evidence field: 'No licence statement in inspect_dataset_link output (link_type json_stat, source ESTAT). probe_url on https://ec.europa.eu/eurostat/about-us/policies/copyright returned HTTP 404, so no licence was read. Source is not in list_external_register.'",
+        "raised_by": "rule:rule_licence"
+      },
+      {
+        "code": "COV-PARTIAL-WINDOW",
+        "evidence": "Source covers 2005-01-01..2023-12-31; window coverage below 95% (production 0%, prototype 24%)",
+        "raised_by": "rule:rule_temporal_coverage"
+      }
+    ],
+    "link.uci_360": [
+      {
+        "code": "LIC-ATTRIBUTION",
+        "evidence": "Licence 'CC BY 4.0' requires attribution",
+        "raised_by": "rule:rule_licence"
+      },
+      {
+        "code": "FRS-STALE",
+        "evidence": "Source end 2005-04-04 is more than 5 years before as_of 2026-10-15",
+        "raised_by": "rule:rule_temporal_coverage"
+      },
+      {
+        "code": "DQ-METADATA-CONTRADICTION",
+        "evidence": "Metadata declares has_missing_values='no', but the documentation says otherwise: 'Missing values are tagged with -200 value.' (matched 'Missing values'); \"Declared has_missing_values = 'no' (UCI metadata) contradicts the notes and the sample: -200 is used as the missing code and appears in every numeric column except Date and Time.\" (matched '-200'); 'Sample missingness by column (whole file, 9,357 rows): NMHC(GT) 90.2% missing (8,443 rows of -200); NOx(GT) 17.5% and NO2(GT) 17.5% missing (about 1,640 rows each); CO(GT) 17% missing (1,592 rows); the sensor columns, T, RH and AH are about 3.9% missing (366 rows each).' (matched '-200'); 'C6H6(GT) reports a sentinel_counts of {} and non_missing_share 1.0, but its min is -200.0 with 366 negative values. These are almost certainly the same -200 missing code, so the profiler did not flag them. Treat them as missing.' (matched '-200'); 'Negative temperatures (13 rows, minimum -1.9 C) are plausible winter values, not sentinels. The -200 code is the only sentinel found.' (matched '-200')",
+        "raised_by": "rule:rule_metadata_contradiction"
+      }
+    ],
+    "vendor.atmosdata_pro": [
+      {
+        "code": "LIC-UNKNOWN",
+        "evidence": "No licence established. Evidence field: \"Register entry vendor.atmosdata_pro: agreement_status 'expired', agreement_detail 'Contract AD-2021-114 ran 2022-01-01 to 2025-12-31. Renewal is waiting on Procurement; no signed renewal on file.', approved_purposes []. No licence text available.\"",
+        "raised_by": "rule:rule_licence"
+      },
+      {
+        "code": "LIC-AGREEMENT-NOT-ACTIVE",
+        "evidence": "Vendor feed with agreement_status='expired; contract ad-2021-114 ended 2025-12-31; renewal pending with procurement, not signed'",
+        "raised_by": "rule:rule_agreement"
+      },
+      {
+        "code": "ACC-RESTRICTED",
+        "evidence": "auth_required=True, classification=None, process='Not usable. Requires a signed renewal of AD-2021-114 from Procurement and a newly issued API key before any use. Production use also needs Legal sign-off per the open-data policy entry.'",
+        "raised_by": "rule:rule_access"
+      },
+      {
+        "code": "ACC-UNREACHABLE",
+        "evidence": "Record states the source could not be reached or restored",
+        "raised_by": "rule:rule_access"
+      }
+    ]
+  },
+  "warnings": []
+}

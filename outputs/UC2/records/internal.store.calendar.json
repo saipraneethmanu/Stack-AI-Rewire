@@ -1,0 +1,122 @@
+{
+  "source_id": "internal.store.calendar",
+  "kind": "internal",
+  "title": "Shop calendar (opening days, closures, local events)",
+  "summary": "Internal daily calendar for the Valdena Gelato shop recording whether the shop was open on each date and any local event name for that day. Catalog grain is daily, starting 2022-01-01 and still open-ended, refreshed weekly by Store Operations. Approximate row count is 1,500, which is fewer than the number of calendar days in the stated coverage, so gaps are possible. It covers one shop only and does not hold national public holidays.",
+  "schema": {
+    "documented": "structured",
+    "field_count": 3,
+    "fields": [
+      {
+        "name": "calendar_date",
+        "type": "date",
+        "description": "Day",
+        "pii": false,
+        "unit": null
+      },
+      {
+        "name": "is_open",
+        "type": "boolean",
+        "description": "Whether the shop was open",
+        "pii": false,
+        "unit": null
+      },
+      {
+        "name": "event_name",
+        "type": "string",
+        "description": "Local event that day, if any",
+        "pii": false,
+        "unit": null
+      }
+    ],
+    "notes": "Column list taken from catalog entry store.calendar. No wiki page documents the columns further."
+  },
+  "temporal": {
+    "start": "2022-01-01",
+    "end": null,
+    "grain": "daily",
+    "metadata_last_updated": "2026-10-10",
+    "open_ended": true,
+    "refresh_cadence": "weekly"
+  },
+  "spatial": {
+    "coverage": [
+      "IT"
+    ],
+    "code_system": "free-text / none (single shop; no geographic code in the catalog entry)",
+    "notes": "Catalog describes the shop calendar only. Location of the shop is not stated in the entry; no national holiday data."
+  },
+  "ownership": {
+    "owner": "Store Operations",
+    "publisher": null,
+    "steward": "Named steward listed in catalog (Store Operations)"
+  },
+  "licence": {
+    "name": "internal",
+    "evidence": "Catalog classification 'internal'; no licence statement in catalog entry or wiki.",
+    "commercial_use": "not_applicable",
+    "url": null,
+    "attribution_text": null,
+    "agreement_status": null,
+    "mixed_sources": false
+  },
+  "access": {
+    "method": "warehouse_sql",
+    "auth_required": null,
+    "reachable": null,
+    "classification": "internal",
+    "approx_size_bytes": null,
+    "request_process": "Open to analytics roles (catalog). Access was not tested."
+  },
+  "declared_metadata": {
+    "status": "active",
+    "classification": "internal",
+    "contains_pii": false,
+    "grain": "daily",
+    "row_count_approx": 1500,
+    "refresh_cadence": "weekly",
+    "last_refreshed": "2026-10-10",
+    "catalog_exported_at": "2026-10-14T06:00:00Z"
+  },
+  "documentation_excerpts": [
+    "Catalog description: 'Opening days, closures and local events for the shop.'",
+    "Catalog column is_open: 'Whether the shop was open'; event_name: 'Local event that day, if any'",
+    "Wiki till_migration_2024 (owner Retail Operations, last edited 2024-03-12): 'No sales were recorded in that period. Treat those days as missing, not as zero sales.' (for 2024-02-05 to 2024-03-10; it does not mention this calendar)"
+  ],
+  "quality_notes": [
+    "No wiki page is linked to store.calendar (wiki_backlinks empty in get_catalog_entry), so closure reasons, event coverage and column meanings are undocumented.",
+    "Row count: catalog row_count_approx 1,500 versus about 1,750 calendar days from 2022-01-01 to 2026-10-10. Coverage is therefore either incomplete or the row count is stale; not verified.",
+    "Refresh is weekly with last_refreshed 2026-10-10. The recent window ends 2026-03-31, so the refresh lag does not reach it, but the entry does not say whether past rows are ever revised.",
+    "event_name is free text with no code list or documented coverage.",
+    "The till-migration wiki says no sales were recorded 2024-02-05 to 2024-03-10 and that those days are missing, not zero. This calendar is not stated to mark those days, so it is unknown whether is_open is populated for them; this matters for separating closures from missing sales.",
+    "No national public holidays in this source; N4 must come from another source."
+  ],
+  "provenance": [
+    {
+      "claim": "Catalog entry fields: owner Store Operations, grain daily, coverage 2022-01-01 to open, weekly refresh, last refreshed 2026-10-10, row_count_approx 1500, columns calendar_date/is_open/event_name",
+      "evidence": "get_catalog_entry internal.store.calendar"
+    },
+    {
+      "claim": "No wiki page is linked to this entry",
+      "evidence": "get_catalog_entry internal.store.calendar (wiki_backlinks: [])"
+    },
+    {
+      "claim": "Search for shop calendar returned only the catalog entry and the till-migration wiki page; the wiki page does not reference this calendar",
+      "evidence": "search_internal_catalog 'shop calendar opening days closures local events'; read_wiki_page till_migration_2024"
+    },
+    {
+      "claim": "Days with no sales in Feb-Mar 2024 must be treated as missing, not zero",
+      "evidence": "read_wiki_page till_migration_2024 (last_edited 2024-03-12)"
+    }
+  ],
+  "unknowns": [
+    "Whether is_open is populated for every date, including 2024-02-05 to 2024-03-10.",
+    "Whether the 1,500 row count reflects missing dates in the table.",
+    "Event coverage, event naming and how events were chosen.",
+    "Reasons for closures (not in the entry).",
+    "Whether past rows are revised after the weekly refresh.",
+    "Access: whether analytics role access is granted; no access test was run.",
+    "The shop's exact location and whether the shop is in a region with specific local holidays.",
+    "Licence/terms beyond the internal classification."
+  ]
+}

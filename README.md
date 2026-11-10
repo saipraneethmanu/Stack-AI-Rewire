@@ -238,7 +238,20 @@ The self-check (`check`) tells you whether your outputs are complete and consist
 ## Submission notes
 Your walkthrough is a written file, `outputs/artifacts/walkthrough.md`, not a live session. In your own words, citing your own files, explain one rule you wrote or accepted, one claim in `signoff.json` traced to its record field, one rejected source and why, and one memo conclusion. Answer from your own files.
 
-Write these answers in this README, under this heading. Keep each answer short.
+Answers as of this submission. The reuse check is not finished (see below).
+
+**Reuse check.** Not finished. The extended `SKILL.md` (Steps 3–5) is written and copied to `.claude/skills/data-discovery-agent/`, but I have not yet run Steps 0–2b for UC2 in a fresh session with only that skill and this README, so there are no answers yet. Steps that could not be followed as written so far: Step 2b, since the README's search prompt returns no citations on this gateway (see `outputs/artifacts/decisions.md`). Inputs a data scientist would replace for a new project: the use-case contract, the catalog export, the wiki, the register entries, the allowlisted hosts and the dataset links. Hard-coded values I found for UC1 or UC2: the Open-Meteo coordinates in `config/external_sources_register.json` are a shared register default, not a per-use-case value, and I changed them from Lisbon to a northern-Italy placeholder for both cases.
+
+**Delivery reflection.** Bounded activity: reviewing the UC1 source shortlist.
+- Steps I did myself: reviewed each Step 2b suggestion on its publisher page or metadata endpoint, wrote the gate decisions and reasons, decided each source verdict in `review_UC1.md`, and wrote the signoffs.
+- What the pipeline did: scouting, profiling, rule flags, risk assessment and memo drafting, through the `discovery_agent` commands.
+- What I still had to check myself: the Eurostat licence (on its copyright page, which the pipeline does not probe), the Open-Meteo commercial terms, and the -200 values in C6H6, which the profiler missed.
+- Review time: not measured, so I make no time-saving claim. Model usage is in `outputs/UC1/run_history.jsonl` and `outputs/UC2/run_history.jsonl`.
+
+**Ownership.**
+- Source rejected: the Lombardy air-quality sensors (`nicp-bhqi`). Its metadata gives CC0, but its data endpoint starts at 2026-01-01, so it covers neither window.
+- Rule and agent corrections: I fixed the licence extractor so it reads metadata held in element attributes (G7, `discovery_agent/tools/licence.py`). The Bologna licence went from unknown to CC BY 4.0 and the blocker was removed. I also added a shared-rule line stopping the profiler from copying contact mailboxes into records.
+- A change a new use case would need: per-use-case coordinates. Open-Meteo reads one latitude and longitude from the shared register, so a second city would need its own register entry or an override.
 
 **Reuse check.** Open a fresh Claude Code session that has only your skill and this README. Run Steps 0–2b for UC2, and profile the links you accept in Step 2b (UC2 has no prescribed links). If none survives your check, record "none accepted" and stop. Answer:
 - Which steps could not be followed as written, and what was missing?

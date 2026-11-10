@@ -1,0 +1,30 @@
+{
+  "url": "https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2024/",
+  "canonical_ref": "opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2024",
+  "source_id": "link.bologna_rilevazione_flusso_veico_a104f7",
+  "resolved_url": "https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2024/",
+  "status": 200,
+  "content_type": "text/html; charset=utf-8",
+  "content_length_header": "114140",
+  "last_modified_header": null,
+  "link_type": "landing_page",
+  "title": "Rilevazione flusso veicoli tramite spire - anno 2024 — Comune di Bologna",
+  "meta_description": "Rilevazione oraria degli autoveicoli tramite spire e loro posizione geografica. \n\n\nSi evidenzia inoltre che il codice spira può cambiare nel tempo, pertanto è possibile trovare nella stessa posizione geografica più elementi sovrapposti ma che rappresentano la stessa spira. \n\nPer esaminare i dati di traffico di una o più spire si faccia riferimento al codice id_uni del dataset: valore uguale di codice &quot;id_uni&quot; indica la stessa spira che ha cambiato il valore &quot;codice spira&quot; nel",
+  "jsonld_datasets": [],
+  "licence": {
+    "licence_name": null,
+    "licence_url": null,
+    "snippet": null,
+    "found_in": null
+  },
+  "licence_snippets": [
+    "N schema . Edit in advanced mode Edit in advanced mode Segui il Comune di Bologna @comunebologna Comune di Bologna Telegram Terms and conditions Privacy policy Copyright © 2020 Comune di Bologna, Piazza Maggiore, 6 - 40124 Bologna P.Iva 01232710374 Email: opendata@comune.bologna.it"
+  ],
+  "data_links": [],
+  "downloads_require_login": null,
+  "text_start": "Rilevazione flusso veicoli tramite spire - anno 2024 — Comune di Bologna it en Home Il progetto Storie di Dati Dati API {{ ctx.nhits | number }} record Filters {{ ctx.nhits | number }} record Active filters No active filters Filters Text search is not applied when using the API Console. Rilevazione flusso veicoli tramite spire - anno 2024 Rilevazione oraria degli autoveicoli tramite spire e loro posizione geografica. Si evidenzia inoltre che il codice spira può cambiare nel tempo, pertanto è possibile trovare nella stessa posizione geografica più elementi sovrapposti ma che rappresentano la stessa spira. Per esaminare i dati di traffico di una o più spire si faccia riferimento al codice id_uni del dataset: valore uguale di codice \"id_uni\" indica la stessa spira che ha cambiato il valore \"codice spira\" nel tempo e sarà contraddistinta da un valore diverso di \"livello\" (1, 2, 3, ecc.). I dati del traffico per fascia oraria sono caratterizzati da un parametro definito accuratezza che tiene conto dell'eventuale malfunzionamento delle spire e quindi della valutazione errata del traffico rilevato. Per maggiori informazioni si veda il relativo dataset dell'accuratezza relativo all'anno 2024 Si prenda come dato identificativo unico della stazione spira il campo ID_univoco_stazione_spira Dataset Identifier rilevazione-flusso-veicoli-tramite-spire-anno-2024 0\"> Downloads {{ ctx.dataset.extra_metas.explore.download_count | number }} Territory Last processing {{ ctx.dataset.metas.metadat",
+  "next_steps": [
+    "Pick the most specific data file from jsonld_datasets[].distribution or data_links and call sample_data_file on it (if it is on an allowlisted host).",
+    "If downloads require a login or subscription, record ACC-RESTRICTED; do not try to get around it."
+  ]
+}

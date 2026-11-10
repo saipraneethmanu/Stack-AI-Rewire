@@ -1,0 +1,139 @@
+{
+  "source_id": "link.bologna_rilevazione_flusso_veico_a104f7",
+  "kind": "dataset_link",
+  "title": "Rilevazione flusso veicoli tramite spire - anno 2024 (Comune di Bologna open data)",
+  "summary": "Hourly vehicle counts per road loop counter (spira) in the city of Bologna, Italy, for calendar year 2024, with the geographic position of each counter. The portal notes that a counter's code can change over time, so one physical loop may appear under several codes; the id_uni field links them. Traffic is flagged with an accuracy parameter that is documented in a separate 2024 accuracy dataset. This is a Bologna source, not Valdena client traffic, and it covers only 2024.",
+  "schema": {
+    "documented": "free_text_only",
+    "field_count": null,
+    "fields": [
+      {
+        "name": "codice spira",
+        "description": "Loop/counter code; can change over time for the same physical loop (per meta_description)",
+        "pii": false,
+        "type": null,
+        "unit": null
+      },
+      {
+        "name": "id_uni",
+        "description": "Stable identifier linking records of the same physical loop across code changes (per meta_description)",
+        "pii": false,
+        "type": null,
+        "unit": null
+      },
+      {
+        "name": "livello",
+        "description": "Level number (1, 2, 3...) distinguishing successive codes of the same loop (per meta_description)",
+        "pii": false,
+        "type": null,
+        "unit": null
+      },
+      {
+        "name": "ID_univoco_stazione_spira",
+        "description": "Unique identifier of the loop station, recommended as the unique key (per meta_description)",
+        "pii": false,
+        "type": null,
+        "unit": null
+      },
+      {
+        "name": "accuratezza",
+        "description": "Accuracy parameter for hourly traffic counts, accounting for counter malfunction (per text_start); see separate 2024 accuracy dataset",
+        "pii": false,
+        "type": null,
+        "unit": null
+      }
+    ],
+    "notes": "Field names taken from the portal description text only; the data file and its full schema were not reachable in this profile, so types and units are unknown."
+  },
+  "temporal": {
+    "start": "2024-01-01",
+    "end": "2024-12-31",
+    "grain": "hourly",
+    "metadata_last_updated": null,
+    "open_ended": false,
+    "refresh_cadence": null
+  },
+  "spatial": {
+    "coverage": [
+      "IT"
+    ],
+    "code_system": "free-text municipality name (Bologna) with geographic position of each loop; no ISO or INSEE code stated",
+    "notes": "City of Bologna only. Not in the Valdena client geography. Portal page 'Territory' field present but its value was not extracted."
+  },
+  "ownership": {
+    "owner": "Comune di Bologna",
+    "publisher": "Comune di Bologna (opendata portal)",
+    "steward": null
+  },
+  "licence": {
+    "name": "CC BY 4.0",
+    "evidence": "inspect_dataset_link on the landing page: licence_name 'CC BY 4.0', licence_url https://creativecommons.org/licenses/by/4.0/, found_in 'text'. The only licence snippet read was the URL itself; no separate dataset-level licence was found in the page text.",
+    "mixed_sources": null,
+    "url": "https://creativecommons.org/licenses/by/4.0/",
+    "attribution_text": null,
+    "commercial_use": "yes",
+    "agreement_status": "not_required_open_data"
+  },
+  "access": {
+    "method": "file_download",
+    "auth_required": false,
+    "reachable": true,
+    "classification": "open data",
+    "request_process": null,
+    "approx_size_bytes": null
+  },
+  "declared_metadata": {
+    "portal_record_count": "not extracted (template placeholder in page text)",
+    "dataset_identifier": "rilevazione-flusso-veicoli-tramite-spire-anno-2024",
+    "licence": "CC BY 4.0"
+  },
+  "documentation_excerpts": [
+    "Rilevazione oraria degli autoveicoli tramite spire e loro posizione geografica.",
+    "Si evidenzia inoltre che il codice spira può cambiare nel tempo, pertanto è possibile trovare nella stessa posizione geografica più elementi sovrapposti ma che rappresentano la stessa spira.",
+    "I dati del traffico per fascia oraria sono caratterizzati da un parametro definito accuratezza che tiene conto dell'eventuale malfunzionamento delle spire e quindi della valutazione errata del traffico rilevato."
+  ],
+  "quality_notes": [
+    "No data links or distributions were exposed on the landing page (data_links and jsonld_datasets empty), so no data file was sampled. Schema and value sets are unverified.",
+    "Loop codes change over time: the same physical loop can appear at several positions with different 'codice spira' values; id_uni must be used to link them (per meta_description).",
+    "Hourly counts carry an accuracy parameter for counter malfunction; records with poor accuracy need filtering. The accuracy dataset for 2024 is a separate dataset not profiled here.",
+    "Coverage is 2024 only, so it cannot supply the 2025 part of the production window; it is also a different city from the client (Valdena).",
+    "Page footer shows 'Copyright © 2020', and 'Last processing' metadata was not extracted, so the currency of the data is unknown.",
+    "Candidate note says the page licence is CC BY 4.0; this was confirmed in the page text but the dataset-level licence was not separately read."
+  ],
+  "provenance": [
+    {
+      "claim": "Landing page resolves (HTTP 200, text/html) with title 'Rilevazione flusso veicoli tramite spire - anno 2024 — Comune di Bologna' and describes hourly vehicle counts by loop.",
+      "evidence": "inspect_dataset_link url=https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2024/"
+    },
+    {
+      "claim": "Licence stated as CC BY 4.0 in page text, with URL https://creativecommons.org/licenses/by/4.0/.",
+      "evidence": "inspect_dataset_link licence field (found_in: text)"
+    },
+    {
+      "claim": "No downloadable data_links or JSON-LD distributions were exposed; downloads_require_login not determined.",
+      "evidence": "inspect_dataset_link data_links=[] jsonld_datasets=[]"
+    },
+    {
+      "claim": "The Bologna portal is not on the client's external-source register, so no API probe was made.",
+      "evidence": "list_external_register (use_case UC1) returned no Bologna or opendata.comune.bologna.it entry"
+    },
+    {
+      "claim": "Code changes over time and id_uni / accuratezza field guidance.",
+      "evidence": "inspect_dataset_link meta_description and text_start"
+    },
+    {
+      "claim": "Copyright footer 'Copyright © 2020 Comune di Bologna'.",
+      "evidence": "inspect_dataset_link licence_snippets"
+    }
+  ],
+  "unknowns": [
+    "Number of records and file size (portal count not extracted; no data file reachable).",
+    "Actual field names, types, units and value sets of the data file.",
+    "Date of last data processing / refresh cadence.",
+    "Whether the data file requires login (not determined).",
+    "Dataset-level licence beyond the page-level CC BY 4.0 statement.",
+    "Content and location of the companion 2024 accuracy dataset.",
+    "Whether any 2025 data exists on the portal (the 2024 edition only is described).",
+    "Whether loops are located on roads near Valdena monitoring stations (irrelevant to Valdena, as the city is Bologna)."
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "source_id": "link.data_open_air_chicago_hour_aggre_d4970b",
+  "kind": "dataset_link",
+  "title": "Open Air Chicago hourly aggregations (data.gov link, not reachable)",
+  "summary": "Candidate link to a data.gov catalog record titled \"open-air-chicago-hour-aggregations\", described by the human submitter as hourly air-quality sensor data from a US city (Chicago by title). The link could not be opened, so the contents, variables, period, licence and owner are unverified. Nothing in this record confirms that it covers Italy, the prototype window (2004-03-10 to 2005-04-04) or the production window.",
+  "schema": {
+    "documented": "none",
+    "fields": [],
+    "notes": "No metadata could be read because the host was refused."
+  },
+  "temporal": {
+    "start": null,
+    "end": null,
+    "grain": "unknown",
+    "metadata_last_updated": null,
+    "open_ended": null,
+    "refresh_cadence": null
+  },
+  "spatial": {
+    "coverage": [],
+    "code_system": null,
+    "notes": "Submitter describes the source as a US city (Chicago per the link title). The use case geography is IT (Valdena, northern Italy). A US city would not match the primary geography unless stated otherwise; this is not verified."
+  },
+  "ownership": {
+    "owner": null,
+    "publisher": null,
+    "steward": null
+  },
+  "licence": {
+    "name": null,
+    "evidence": "Not read: inspect_dataset_link on https://catalog.data.gov/dataset/open-air-chicago-hour-aggregations returned DOMAIN_NOT_ALLOWLISTED for host catalog.data.gov. No licence statement was obtained.",
+    "agreement_status": null,
+    "attribution_text": null,
+    "commercial_use": "unknown",
+    "mixed_sources": null,
+    "url": null
+  },
+  "access": {
+    "method": "dataset_link (landing page)",
+    "auth_required": null,
+    "reachable": false,
+    "request_process": "Host catalog.data.gov must be added to config/allowlist.json (approval needed) before this landing page or its metadata can be read. Not attempted by other routes.",
+    "approx_size_bytes": null,
+    "classification": null
+  },
+  "declared_metadata": {
+    "has_missing_values": null,
+    "contains_pii": null
+  },
+  "documentation_excerpts": [],
+  "quality_notes": [
+    "Source unreachable: inspect_dataset_link returned DOMAIN_NOT_ALLOWLISTED for catalog.data.gov. Per guardrail policy, no alternative route was attempted.",
+    "Geography mismatch risk: title indicates a US city (Chicago), while the use case primary geography is IT. Even if reachable, this source may not serve N1-N3 for Valdena.",
+    "Prototype window coverage (2004-03-10 to 2005-04-04) cannot be checked; the source's date range is unknown.",
+    "Submitter's suspected_issues list was empty and the why_relevant text was not verified against any document."
+  ],
+  "provenance": [
+    {
+      "claim": "The candidate link is https://catalog.data.gov/dataset/open-air-chicago-hour-aggregations, found by human input and mapped to need N1 for the prototype window.",
+      "evidence": "candidate record link.data_open_air_chicago_hour_aggre_d4970b (task input)"
+    },
+    {
+      "claim": "The host catalog.data.gov is not on the allowlist and the link could not be opened.",
+      "evidence": "inspect_dataset_link url=https://catalog.data.gov/dataset/open-air-chicago-hour-aggregations returned error DOMAIN_NOT_ALLOWLISTED"
+    },
+    {
+      "claim": "The use case primary geography is IT and the needs are N1 to N6 across prototype and production windows.",
+      "evidence": "use_case_spec UC1 (as_of 2026-10-15)"
+    }
+  ],
+  "unknowns": [
+    "Contents, variables, units and grain of the data (hourly claim is unverified).",
+    "Actual temporal coverage and whether it overlaps the prototype window 2004-03-10 to 2005-04-04.",
+    "Geographic coverage (title suggests Chicago, US; not Italy).",
+    "Licence, owner, publisher, steward and refresh cadence.",
+    "Whether any personal data is present.",
+    "Whether catalog.data.gov would be approved for allowlisting."
+  ]
+}

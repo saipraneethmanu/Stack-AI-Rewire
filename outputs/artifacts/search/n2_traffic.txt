@@ -1,0 +1,42 @@
+The **Municipality of Bologna (Comune di Bologna)** publishes official open datasets containing hourly road traffic volumes measured across the city's inductive loop sensor network.
+
+---
+
+### Dataset Details
+
+* **City:** Bologna, Italy
+* **Publisher:** Comune di Bologna
+* **License:** **Creative Commons Attribution 4.0 International (CC BY 4.0)**
+* **Temporal Granularity:** Hourly vehicle counts across a 24-hour day
+* **Spatial Granularity:** Sensor location / loop ID (`ID_univoco_stazione_spira`, street name, latitude, longitude, and GIS geopoint)
+* **Available Formats:** CSV, JSON, GeoJSON, Parquet, and Opendatasoft REST API
+
+---
+
+### Dataset Pages
+
+1. **Year 2024:**
+   * **Dataset Title:** *Rilevazione flusso veicoli tramite spire - anno 2024*
+   * **URL:** [https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2024/information/](https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2024/information/)
+
+2. **Year 2025:**
+   * **Dataset Title:** *Rilevazione flusso veicoli tramite spire - anno 2025*
+   * **URL:** [https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2025/information/](https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2025/information/)
+
+---
+
+### Data Schema Overview
+Each row in the dataset corresponds to a counter station for a specific calendar date and contains:
+* **Sensor/Location Metadata:** `ID_univoco_stazione_spira`, `codice`, `nome_via` (street name), `direzione` (travel direction), `latitudine`, `longitudine`, `geopoint`.
+* **Time Information:** `data` (date), `giorno` / `num_giorno_settimana` (day of week).
+* **Hourly Counts:** Columns representing the detected traffic volumes by hour of the day.
+* **Accuracy:** A companion accuracy metric indicating sensor operating health.
+
+Citations:
+comune.bologna.it | https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2025/
+comune.bologna.it | https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2025/analyze/
+comune.bologna.it | https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2026/
+comune.bologna.it | https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2024/export/
+comune.bologna.it | https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2024/
+researchgate.net | UNRESOLVED redirect, open it yourself: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFAEBzh6-K9CwmGBKHpM46vrGPfMlfkpqUHH_NxL4SYZkQowf1gyfBOqJqqfYRwSBiE6tWORFcQffilAVN6kXhoMdLZWqOhwWxMtWBVxrxR419ff-jvJ85L9d_q39aX1Y0wdjXg7yGInsmzLqbvtd25lSA-Z9UXob44pKGDM9vegylOYrRlQ3S-7K5pezhzxlzVPEB2aGLQec-Tl7fFMNmxU4PT0tbbrlNwTjoeH7tTtDx9ML8bIU4EmVl9Zf017HbpZ02xhw==
+comune.bologna.it | https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2024/table/

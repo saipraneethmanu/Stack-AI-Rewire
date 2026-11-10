@@ -1,0 +1,4 @@
+{
+  "error": "DOMAIN_NOT_ALLOWLISTED",
+  "message": "DOMAIN_NOT_ALLOWLISTED: host 'catalog.data.gov' is not on config/allowlist.json. Do not try another route to it; record the source as unreachable and say which host would need approval."
+}

@@ -1,0 +1,143 @@
+{
+  "source_id": "link.bologna_rilevazione_flusso_veico_a104f7",
+  "kind": "dataset_link",
+  "title": "Rilevazione flusso veicoli tramite spire - anno 2024 (Comune di Bologna open data, hourly road-loop vehicle counts, 2024)",
+  "summary": "Open-data landing page for hourly vehicle counts from road loop counters (\"spire\") in the city of Bologna, Italy, for calendar year 2024, with geographic position of each loop. The page describes the counter identifier (codice spira) as changing over time, with id_uni linking the same physical loop across changes, and a per-hour accuracy parameter tied to a separate accuracy dataset. This is a different city from the client (Valdena) and covers only 2024, so it is a pipeline test source for traffic counts, not client traffic. Only the landing page was read; no data file was reachable or sampled.",
+  "schema": {
+    "documented": "structured",
+    "field_count": null,
+    "fields": [
+      {
+        "name": "id_uni",
+        "description": "Identifier linking the same physical loop across changes of codice spira (per landing page)",
+        "pii": false,
+        "type": null,
+        "unit": null
+      },
+      {
+        "name": "codice spira",
+        "description": "Loop code; can change over time at the same location (per landing page)",
+        "pii": false,
+        "type": null,
+        "unit": null
+      },
+      {
+        "name": "livello",
+        "description": "Level (1, 2, 3 ...) distinguishing successive versions of the same loop (per landing page)",
+        "pii": false,
+        "type": null,
+        "unit": null
+      },
+      {
+        "name": "ID_univoco_stazione_spira",
+        "description": "Unique identifier of the loop station, recommended as the unique station key (per landing page)",
+        "pii": false,
+        "type": null,
+        "unit": null
+      },
+      {
+        "name": "accuratezza",
+        "description": "Accuracy parameter per hourly slot, accounting for loop malfunction (per landing page; details in a separate 2024 accuracy dataset)",
+        "pii": false,
+        "type": null,
+        "unit": null
+      }
+    ],
+    "notes": "Field list taken from the landing page prose only (meta_description and text_start). No data file was reachable, so field types, units and the vehicle-count field name are not confirmed."
+  },
+  "temporal": {
+    "start": "2024-01-01",
+    "end": "2024-12-31",
+    "grain": "hourly",
+    "metadata_last_updated": null,
+    "open_ended": false,
+    "refresh_cadence": null
+  },
+  "spatial": {
+    "coverage": [
+      "IT"
+    ],
+    "code_system": "Municipal loop station identifiers (ID_univoco_stazione_spira, id_uni, codice spira) with geographic coordinates; city = Bologna",
+    "notes": "Bologna only. Not Valdena. Joins to client stations or Valdena counters are not possible from this source."
+  },
+  "ownership": {
+    "owner": "Comune di Bologna (open data portal)",
+    "publisher": "Comune di Bologna",
+    "steward": null
+  },
+  "licence": {
+    "name": null,
+    "evidence": "The landing page fetched by inspect_dataset_link shows no licence statement: licence_name and licence_url are null, and the only footer text is a copyright line ('Copyright © 2020 Comune di Bologna'). The candidate's claim of 'page licence CC BY 4.0' could not be verified in any tool output. No terms page was probed.",
+    "url": null,
+    "agreement_status": "not_required_open_data",
+    "commercial_use": "unknown",
+    "mixed_sources": null,
+    "attribution_text": "Comune di Bologna"
+  },
+  "access": {
+    "method": "web landing page (open data portal); data download not located",
+    "auth_required": false,
+    "reachable": true,
+    "classification": "open data (as listed in register policy.open_data_links)",
+    "request_process": null,
+    "approx_size_bytes": null
+  },
+  "declared_metadata": {
+    "dataset_identifier": "rilevazione-flusso-veicoli-tramite-spire-anno-2024",
+    "record_count_on_page": "not captured (page shows a count placeholder)",
+    "licence": null
+  },
+  "documentation_excerpts": [
+    "Rilevazione oraria degli autoveicoli tramite spire e loro posizione geografica.",
+    "Si evidenzia inoltre che il codice spira può cambiare nel tempo, pertanto è possibile trovare nella stessa posizione geografica più elementi sovrapposti ma che rappresentano la stessa spira.",
+    "I dati del traffico per fascia oraria sono caratterizzati da un parametro definito accuratezza che tiene conto dell'eventuale malfunzionamento delle spire e quindi della valutazione errata del traffico rilevato."
+  ],
+  "quality_notes": [
+    "Only the landing page was read. No data file, distribution or download link was found (data_links and jsonld_datasets empty), so the file has not been sampled and no row-level values, counts or null patterns are confirmed.",
+    "Coverage is calendar 2024 only (per the URL slug and page title). It cannot cover the 2025 part of the production window or any part of the prototype window.",
+    "Loop codes change over time: the page says the same physical loop may appear under several codice spira values and several overlapping rows; id_uni links them. Users must not count overlapping rows twice.",
+    "Hourly counts carry an accuracy parameter (accuratezza) that flags loop malfunction; the page says it is documented in a separate 2024 accuracy dataset, not yet reviewed.",
+    "Licence conflict: the candidate record says CC BY 4.0, but the fetched page shows no licence text (see licence.evidence). Treat licence as unknown until the portal's licence field is read or Legal confirms it. Open-data policy allows prototyping only; production use needs Legal sign-off.",
+    "The Valdena wiki page counter_replacement_2024 (last_edited 2024-04-02) concerns Valdena's own road counters, replaced 2024-03-18, which changed direction handling. It does not apply to Bologna loops, but it shows why counter-level breaks must be checked before any traffic series is joined.",
+    "Page footer shows 'Last processing' field empty in the captured text, so the last refresh date is unknown."
+  ],
+  "provenance": [
+    {
+      "claim": "Landing page resolves with HTTP 200, title 'Rilevazione flusso veicoli tramite spire - anno 2024', 114140-byte HTML, no last-modified header",
+      "evidence": "inspect_dataset_link url=https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2024/"
+    },
+    {
+      "claim": "Dataset describes hourly vehicle counts from road loops and their geographic position; loop code can change over time; id_uni links versions; accuracy parameter exists",
+      "evidence": "inspect_dataset_link meta_description and text_start, same URL"
+    },
+    {
+      "claim": "No licence name or URL found on the page; only a copyright footer 'Copyright © 2020 Comune di Bologna'",
+      "evidence": "inspect_dataset_link licence and licence_snippets, same URL"
+    },
+    {
+      "claim": "No data file, distribution or download link found in the landing page",
+      "evidence": "inspect_dataset_link data_links=[] and jsonld_datasets=[], same URL"
+    },
+    {
+      "claim": "Open-data links are permitted for prototyping, benchmarking and context only; production needs Legal sign-off",
+      "evidence": "list_external_register policy.open_data_links"
+    },
+    {
+      "claim": "Client's own traffic counts are internal (Mobility Office, hourly from 2021, not this source); counter replacement on 2024-03-18 documented",
+      "evidence": "get_catalog_entry traffic.hourly_counts; read_wiki_page counter_replacement_2024"
+    },
+    {
+      "claim": "Candidate's 'page licence CC BY 4.0' claim is not supported by any tool output",
+      "evidence": "inspect_dataset_link licence fields (null) on the landing page"
+    }
+  ],
+  "unknowns": [
+    "Licence of the data itself (candidate says CC BY 4.0, unverified; landing page shows none).",
+    "Actual data file location, format, row count, and column types (not found on landing page).",
+    "Whether the vehicle count field is present and its unit (page says 'autoveicoli' hourly).",
+    "Last refresh date and update cadence for the 2024 file.",
+    "Contents and availability of the referenced 2024 accuracy dataset.",
+    "Whether a 2025 version exists (not needed for this source's period, but relevant to the production window).",
+    "Owner or steward named on the portal (only publisher-level footer seen)."
+  ]
+}

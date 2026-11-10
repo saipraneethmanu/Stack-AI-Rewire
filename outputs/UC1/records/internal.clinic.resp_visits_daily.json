@@ -1,0 +1,128 @@
+{
+  "source_id": "internal.clinic.resp_visits_daily",
+  "kind": "internal",
+  "title": "Respiratory visits (daily, by district), Clinical Analytics",
+  "summary": "Daily counts of respiratory clinic visits per district of residence, with three columns (visit_date, district, visit_count) and no patient identifiers, per the catalog. Approximately 40,000 rows, stated as coverage from 2022-01-01 with no end date and a daily refresh. It is the only clinic dataset the wiki policy allows for this surveillance purpose, and it covers the production window (2024-2025) for need N4 only.",
+  "schema": {
+    "documented": "structured",
+    "field_count": 3,
+    "fields": [
+      {
+        "name": "visit_date",
+        "type": "date",
+        "description": "Day of the visits",
+        "pii": false,
+        "unit": null
+      },
+      {
+        "name": "district",
+        "type": "string",
+        "description": "District of residence",
+        "pii": false,
+        "unit": null
+      },
+      {
+        "name": "visit_count",
+        "type": "integer",
+        "description": "Respiratory visits that day",
+        "pii": false,
+        "unit": "visits"
+      }
+    ],
+    "notes": "Column descriptions are one line each. No ICD-10 case definition, date-type definition (visit vs registration) or zero-day convention is documented."
+  },
+  "temporal": {
+    "start": "2022-01-01",
+    "end": null,
+    "grain": "daily",
+    "metadata_last_updated": "2026-10-14",
+    "open_ended": true,
+    "refresh_cadence": "daily"
+  },
+  "spatial": {
+    "coverage": [
+      "IT"
+    ],
+    "code_system": "free-text district names (not stated as ISTAT or other standard codes)",
+    "notes": "Valdena Civic Health Office, northern Italy. District coding scheme is not documented in the catalog entry."
+  },
+  "ownership": {
+    "owner": "Clinical Analytics",
+    "publisher": null,
+    "steward": "Named steward listed in catalog (not recorded here); policy page owner is the Data Protection Office"
+  },
+  "licence": {
+    "name": "internal",
+    "agreement_status": null,
+    "attribution_text": null,
+    "commercial_use": "not_applicable",
+    "evidence": "get_catalog_entry internal.clinic.resp_visits_daily: classification 'internal'; wiki clinic_data_policy (owner Data Protection Office, last_edited 2025-02-01) restricts use to daily district counts for this surveillance purpose.",
+    "mixed_sources": false,
+    "url": null
+  },
+  "access": {
+    "method": "warehouse_sql",
+    "auth_required": true,
+    "reachable": null,
+    "classification": "internal",
+    "request_process": "Request to Clinical Analytics",
+    "approx_size_bytes": null
+  },
+  "declared_metadata": {
+    "contains_pii": false,
+    "classification": "internal",
+    "status": "active",
+    "grain": "daily",
+    "row_count_approx": 40000,
+    "refresh_cadence": "daily",
+    "last_refreshed": "2026-10-14"
+  },
+  "documentation_excerpts": [
+    "Respiratory clinic visits counted per day and per district. Contains no patient identifiers. (catalog description)",
+    "Only daily counts by district (`clinic.resp_visits_daily`) may be used for this purpose. (wiki clinic_data_policy, last_edited 2025-02-01)",
+    "Patient postcode and age band are personal data. They must not leave the clinic systems for analysis. (wiki clinic_data_policy)"
+  ],
+  "quality_notes": [
+    "Not sampled: access is by request to Clinical Analytics via warehouse_sql, so no data profile was obtained. Reachability is unverified, not confirmed.",
+    "Respiratory case definition (ICD-10 codes) is not documented in the catalog or the policy page.",
+    "Whether zero-visit days are written as explicit zero rows or omitted is not documented; this matters for daily counts.",
+    "Visit date versus registration date is not specified for visit_date.",
+    "No documentation of small-cell suppression or disclosure rules for district counts; the policy page only restricts to daily district counts.",
+    "No documentation of clinic migrations, coding changes or breaks in the series since 2022-01-01.",
+    "Coverage starts 2022-01-01 and does not include the prototype window (2004-03-10 to 2005-04-04); it is relevant only to need N4 in the production window.",
+    "Policy and catalog agree on the dataset name and daily-count restriction; the policy (2025-02-01) predates the catalog export (2026-10-14), and no later change to the policy is recorded in the sources read."
+  ],
+  "provenance": [
+    {
+      "claim": "Catalog describes the dataset as daily respiratory visit counts by district, no patient identifiers, owner Clinical Analytics, status active, classification internal",
+      "evidence": "get_catalog_entry internal.clinic.resp_visits_daily"
+    },
+    {
+      "claim": "Temporal coverage 2022-01-01 with no end, daily refresh, last refreshed 2026-10-14, approx 40,000 rows",
+      "evidence": "get_catalog_entry internal.clinic.resp_visits_daily (temporal_coverage, refresh_cadence, last_refreshed, row_count_approx)"
+    },
+    {
+      "claim": "Only daily district counts may be used for surveillance; patient-level records are excluded; postcode and age band are personal data",
+      "evidence": "read_wiki_page clinic_data_policy (owner Data Protection Office, last_edited 2025-02-01)"
+    },
+    {
+      "claim": "Columns are visit_date (date), district (string), visit_count (integer)",
+      "evidence": "get_catalog_entry internal.clinic.resp_visits_daily (columns)"
+    }
+  ],
+  "unknowns": [
+    "Respiratory case definition (ICD-10 codes) used for counting",
+    "Whether zero-visit days are explicit rows",
+    "Whether visit_date is the visit day or registration day",
+    "District coding scheme and its join keys to other geographies",
+    "Small-cell suppression or disclosure rules for publishing or sharing district counts",
+    "Clinic migrations, coding breaks or missing periods since 2022",
+    "Actual data values, null rates and date range (not sampled; access by request)",
+    "Whether the warehouse table is currently reachable for the analysis team",
+    "Any agreement or approval specific to sharing outside Clinical Analytics"
+  ],
+  "status": "active",
+  "location": "azure://valdena-health/clinic/resp_visits_daily",
+  "sample_findings": [],
+  "canonical_ref": null
+}

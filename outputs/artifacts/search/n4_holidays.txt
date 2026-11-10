@@ -1,0 +1,70 @@
+Because ISTAT (the Italian National Institute of Statistics) publishes administrative territorial divisions, boundaries, and demographic data—but **does not maintain an official national registry of local patron saint days**—finding a single, official government open dataset covering all ~7,900 municipalities can be challenging.
+
+The primary machine-readable, open-licensed resources available include:
+
+---
+
+### 1. Wikidata (Best for Complete National Coverage & Linked Data)
+Wikidata is the most comprehensive, machine-readable, and permissively licensed open dataset for Italian municipalities, their ISTAT codes, patron saints, and feast days.
+
+* **License:** **CC0 1.0 Universal (Public Domain Dedication)**.
+* **Format:** JSON, CSV, TSV, XML, or RDF via the Wikidata SPARQL Query Service (`query.wikidata.org`).
+* **Properties used:**
+  * `wdt:P31/wdt:P279* wd:Q747074` (instance/subclass of *comune d'Italia*)
+  * `wdt:P635` (ISTAT code)
+  * `wdt:P417` (Patron saint)
+  * `wdt:P841` (Feast day / patron saint day)
+
+#### Ready-to-use SPARQL Query:
+```sparql
+SELECT ?comune ?comuneLabel ?istatCode ?patronLabel ?feastDay WHERE {
+  ?comune wdt:P31 wd:Q747074; # Instance of Italian comune
+          wdt:P635 ?istatCode; # ISTAT ID
+          wdt:P417 ?patron.   # Patron saint
+  
+  OPTIONAL { ?patron wdt:P841 ?feastDay. } # Feast day associated with the saint
+  
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "it,en". }
+}
+ORDER BY ?istatCode
+```
+*You can paste this directly into [query.wikidata.org](https://query.wikidata.org/) and download the entire table as **CSV** or **JSON**.*
+
+---
+
+### 2. Open Data Sicilia / Community Open Datasets (GitHub)
+Several Italian civic hacking and open-data communities maintain compiled CSV/JSON tables of Italian administrative entities:
+
+* **OpenDataSicilia – `comuni-italiani` repository**:
+  * **Link:** `github.com/opendatasicilia/comuni-italiani`
+  * **License:** **CC-BY 4.0** / Open Data.
+  * **Format:** CSV / GeoJSON.
+  * **Content:** Contains enriched attributes for Italian municipalities, including ISTAT codes, cadastral codes, geographic coordinates, and local attributes.
+
+* **Matteocontrini / `comuni-json` (GitHub)**:
+  * **License:** **MIT License**.
+  * **Format:** JSON.
+  * **Content:** Frequently used dataset of all Italian municipalities with administrative codes and metadata, often used as a baseline for merging local holiday calendars.
+
+---
+
+### 3. Regional / Local Open Data Portals (`dati.gov.it`)
+If you require datasets issued by local public administrations:
+* **Regione Puglia (Patrimonio Immateriale - Feste Patronali)**:
+  * Available on [dati.puglia.it](https://dati.puglia.it/) under **IODL 2.0 / CC-BY**.
+  * Provides detailed JSON/CSV records of municipal patron saint festivals, calendar periods, and cultural registrations for municipalities across Puglia.
+* Individual municipalities (e.g., Milano, Roma, Firenze) publish their local civil and school holiday calendars via their respective municipal open data portals (e.g., `dati.comune.milano.it`), universally licensed under **IODL 2.0** or **CC-BY**.
+
+---
+
+### 4. Machine-Readable National & Regional Public Holiday Calendars
+For standard statutory national holidays (which apply nationally alongside the municipal patron saint day):
+* **`nager/nager.date` Public Holidays API**:
+  * **Link:** `date.nager.at` (Open Source on GitHub: `nager/Nager.Date`).
+  * **License:** **MIT License**.
+  * **Format:** REST API / JSON.
+  * **Coverage:** Includes Italian national public holidays (and sub-regional variances where applicable by statute, such as South Tyrol / Alto Adige).
+
+Citations:
+github.com | https://github.com/opendatasicilia/comuni-italiani
+dati.puglia.it | https://dati.puglia.it/v2/dataset/cartapulia-patrimonio-immateriale-feste-patronali-e-bande-della-tradizione-pugliese

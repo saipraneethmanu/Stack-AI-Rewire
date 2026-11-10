@@ -1,0 +1,29 @@
+The European Environment Agency (EEA) and regional environmental agencies (ARPA) in Italy provide public access to historic air quality measurements.
+
+---
+
+### Primary Source: European Environment Agency (EEA) – Air Quality e-Reporting / AirBase
+
+* **Geographic Coverage:** All Italian regions and major cities (e.g., Milan, Rome, Turin, Florence, Bologna).
+* **Parameters & Resolution:** Hourly monitoring station time series for $\text{NO}_2$ and $\text{PM}_{2.5}$ (along with $\text{PM}_{10}$, $\text{O}_3$, $\text{SO}_2$, and $\text{CO}$).
+* **Temporal Coverage:** Multi-decadal records, including **2004–2005** (covered under historical AirBase / e-Reporting time series).
+* **Download Portal:** 
+  * [EEA Air Quality Download Service](https://eeadmz1-downloads-webapp.azurewebsites.net/) *(allows filtering by Country: Italy / `IT`, Pollutant: `PM2.5` / `NO2`, Year: `2004` & `2005`, and aggregation level: hourly).*
+  * Alternatively accessible programmatically via the [EEA Air Quality Portal & API](https://www.eea.europa.eu/en/datahub/datahubitem-view/0e2f9d6c-6a3a-44e2-9ef8-e04e4a6a57c2) or the Python client `airbase`.
+* **Format:** Parquet / CSV.
+* **Licence:** Open data under **CC BY 4.0** (or standard EEA Data Policy: free reuse for commercial and non-commercial purposes with attribution).
+
+---
+
+### Alternative / Regional Source: Regione Lombardia / ARPA Lombardia Open Data
+
+For cities such as **Milan**, **Bergamo**, and **Brescia**, ARPA Lombardia maintains granular historic measurements via the regional open data infrastructure:
+
+* **Download Page:** [Dati sensori aria – Open Data Regione Lombardia](https://www.dati.lombardia.it/Ambiente/Dati-sensori-aria/nicp-bhqi)
+* **Coverage:** Long-term historical station monitoring for Lombardy. Note that while $\text{NO}_2$ is continuously logged at hourly intervals, older $\text{PM}_{2.5}$ data in Italian networks is frequently reported as 24-hour daily gravimetric/continuous averages (if true hourly $\text{PM}_{2.5}$ is strictly required, query automated optical/TEOM monitor stations via the EEA portal above).
+* **Licence:** **Creative Commons Zero / CC0 1.0 Universal** (Public Domain Dedication).
+
+Citations:
+researchgate.net | UNRESOLVED redirect, open it yourself: https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHgNZMe4xeliE12gT7Ycby7ICdUfe0GCog4OWOrmeRyWsrtzGsls3x5Bc_7BGeB-FoGXJ2uXNr6XiDnIbgOvtKrh5ntH2ObUCGu7GZru4-Tr4Y3SF6IRHJYaI6-gSKyV6mL37Hzfobph6Nkn80VEErySwHZeHLD7csPHP1dPhg6An3fevU51HxIlMjMQm1RDgSVIU-WP_eC9GnC8GgZYc9IerR1gfz1ato5AaAoM28yImXy
+eumetsat.int | https://dust.trainhub.eumetsat.int/docs/eea_air_quality.html
+dati.lombardia.it | https://www.dati.lombardia.it/Ambiente/Dati-sensori-aria/nicp-bhqi

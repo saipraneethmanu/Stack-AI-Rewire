@@ -1,0 +1,204 @@
+{
+ "agent": "profiler__internal.clinic.resp_visits_daily",
+ "system": "# Operating rules (all discovery agents)\n\nYou are one agent in a data-discovery system. The goal is to locate, catalog and assess the feasibility of data sources for a business problem **before any pipeline is built**.\n\n- **Metadata first, then a small sample, never the whole dataset.** Work from catalog entries, wiki pages, API metadata, landing pages, descriptors and terms pages. You may read a capped sample of a data file with `sample_data_file` to check structure and quality, but never try to download a whole dataset. Do not copy personal data (names, emails, addresses, ids) into your output.\n- **Provenance.** Every claim you make about a source must be traceable to a tool call (tool name and argument), a URL, a catalog field or a wiki page id.\n- **Unknown stays unknown.** If no source states a licence, owner, refresh cadence, consent or coverage date, record null or \"unknown\" and say so. Never infer one from what is typical.\n- **Guardrails are findings.** A refused host (DOMAIN_NOT_ALLOWLISTED), a timeout, a 401/403, an expired agreement or a restricted table is evidence to record. Do not look for another route to the same data.\n- **Documentation beats catalog metadata when it is more specific or more recent.** When they disagree, record both, with dates.\n- **Be economical.** Use the fewest tool calls that answer the question, and run independent calls in parallel. Stop when you have enough evidence, and finish by calling your submit tool.\n\n\n# Role: Profiler\n\nYou profile **one** candidate source and return a **catalog record**: an auto-generated summary of schema, freshness, ownership, licence, access and documented quality issues, with provenance for every claim.\n\nWhat to gather, by kind:\n- **internal**: `get_catalog_entry` (all fields), then every wiki backlink and related doc with `read_wiki_page`. Record catalog vs wiki disagreements in `quality_notes`, quoting both sides with dates. Internal sources have `licence.name = \"internal\"` and `commercial_use = \"not_applicable\"`.\n- **public_api**: `list_external_register` for the endpoint, then one or two small `call_public_api` probes to check that it responds and which period it covers (probe both ends of the needed windows if coverage is in doubt). Read the provider's terms with `probe_url` on `terms_url` and record the licence and its exact source.\n- **vendor_feed**: read the register entry. Do not try to call it. Record the agreement status and detail in `licence.agreement_status`, and set `access.reachable` to false when credentials are revoked or not issued.\n- **dataset_link** (any URL a human supplied; the link can point anywhere):\n  1. `inspect_dataset_link` on the link. It tells you the link type and gives metadata, licence evidence, files and next steps.\n  2. By link type:\n     - `uci_dataset_page`: read `metadata` (declared flags, notes, variables). If `data_url` exists, `sample_data_file` on it. Otherwise the data is only in an archive: describe the schema from the metadata and say the sample was not possible.\n     - `landing_page` (portals such as Kaggle, Zenodo, data.gov, CKAN or Hugging Face): read `jsonld_datasets` first (licence, dates, coverage, distribution), then `meta_description` and `text_start`. Pick the most specific data file from the distribution or `data_links` and `sample_data_file` it, if its host is allowlisted. If downloads need a login or subscription, set `access.auth_required = true`.\n     - `frictionless_datapackage`: `summarize_datapackage` with a `field_filter` for the use case's geography (e.g. the country code prefix the use case needs). Never sample the large CSVs it lists.\n     - `json_stat`: read the summary (dimensions, time, geo codes, warnings).\n     - `data_file`: the sample profile is already in the result. Find documentation for the file (repository README, parent page) if you can, using `probe_url`.\n     - `json_api`: use the shape and dates found. One more call at most.\n     - `login_wall` / `unreachable` / a refused host: record `access.reachable = false` (or `auth_required = true` for a login wall), say which host or credential would be needed, and stop.\n  3. Licence: use the licence from `inspect_dataset_link` and say where it was found (`found_in`). If none was found, look once on the provider's terms page with `probe_url`. Otherwise record null. Never assume a portal's usual licence.\n  4. Copy `canonical_ref` from `inspect_dataset_link` into the record.\n  5. Put what the **sample** showed in `sample_findings`, naming the column: sentinel values, negative quantities, zero shares, odd value sets (country spellings), date formats, personal-looking columns. A sample's date range is the range of the first rows only: take `temporal.start/end` from the documentation, not from the sample, unless the sample is the whole file.\n  6. Decide what the data **is**: entity, grain, period, geography, population. The Risk Assessor judges fit from this.\n\nField rules:\n- `temporal.start` / `temporal.end` are ISO dates (YYYY-MM-DD) of the **data period**. Use `end = null` only for sources that are still updating. `grain` is one of the schema's values.\n- `access.approx_size_bytes`: the largest file or table size you found stated (descriptor bytes, content-length, row counts x width if stated), else null.\n- `access.reachable = false` if the link itself (or its metadata) could not be reached, the host was refused, or the store cannot be restored. A data file that timed out or is an archive that cannot be sampled does NOT make the source unreachable when its metadata was read; note it in `quality_notes`.\n- `licence.mixed_sources = true` when different fields or files come from upstream providers with different terms.\n- `spatial.code_system`: how places are identified (ISO2, ISO3, free-text country names, Eurostat codes, ...). This decides whether joins will work.\n- `schema.documented`: \"structured\" when fields come with names and types, \"free_text_only\" when they are only described in prose, \"none\" otherwise.\n- At least three `provenance` entries. Put everything you could not establish in `unknowns`.\n",
+ "messages": [
+  {
+   "role": "user",
+   "content": "<use_case_spec>\n{\n \"id\": \"UC1\",\n \"title\": \"Air quality and traffic: can we explain poor-air days and warn clinic patients in time?\",\n \"client\": \"Valdena Civic Health Office (fictional, northern Italy)\",\n \"as_of\": \"2026-10-15\",\n \"geography\": {\n  \"primary\": [\n   \"IT\"\n  ],\n  \"secondary\": []\n },\n \"windows\": [\n  {\n   \"id\": \"prototype\",\n   \"start\": \"2004-03-10\",\n   \"end\": \"2005-04-04\",\n   \"purpose\": \"Build the method on public hourly air-quality readings while the city's own station data is requested.\"\n  },\n  {\n   \"id\": \"production\",\n   \"start\": \"2024-01-01\",\n   \"end\": \"2025-12-31\",\n   \"purpose\": \"Two years of the city's own station, traffic and clinic data for the live warning model.\"\n  }\n ],\n \"needs\": [\n  {\n   \"id\": \"N1\",\n   \"name\": \"Hourly air-pollutant concentrations (for example NO2 or PM2.5)\",\n   \"priority\": \"must\",\n   \"min_grain\": \"hourly\",\n   \"windows\": [\n    \"prototype\",\n    \"production\"\n   ]\n  },\n  {\n   \"id\": \"N2\",\n   \"name\": \"Hourly vehicle traffic near the monitoring stations\",\n   \"priority\": \"must\",\n   \"min_grain\": \"hourly\",\n   \"windows\": [\n    \"production\"\n   ]\n  },\n  {\n   \"id\": \"N3\",\n   \"name\": \"Hourly temperature and humidity\",\n   \"priority\": \"must\",\n   \"min_grain\": \"hourly\",\n   \"windows\": [\n    \"prototype\",\n    \"production\"\n   ]\n  },\n  {\n   \"id\": \"N4\",\n   \"name\": \"Daily respiratory clinic visits, as counts by district\",\n   \"priority\": \"should\",\n   \"min_grain\": \"daily\",\n   \"windows\": [\n    \"production\"\n   ]\n  },\n  {\n   \"id\": \"N5\",\n   \"name\": \"Patient-level clinic visit records\",\n   \"priority\": \"could\",\n   \"min_grain\": \"event\",\n   \"windows\": [\n    \"production\"\n   ]\n  },\n  {\n   \"id\": \"N6\",\n   \"name\": \"National yearly context: deaths linked to PM2.5\",\n   \"priority\": \"could\",\n   \"min_grain\": \"annual\",\n   \"windows\": [\n    \"prototype\",\n    \"production\"\n   ]\n  }\n ]\n}\n</use_case_spec>\n\n<candidate>\n{\n \"source_id\": \"internal.clinic.resp_visits_daily\",\n \"kind\": \"internal\",\n \"title\": \"Respiratory visits (daily, by district), Clinical Analytics\",\n \"need_ids\": [\n  \"N4\"\n ],\n \"target_windows\": [\n  \"production\"\n ],\n \"why_relevant\": \"Daily respiratory visit counts by district, with no patient identifiers. The clinic policy names it as the only clinic dataset that may be used. Coverage from 2022 includes the production window.\",\n \"found_via\": \"search_internal_catalog; get_catalog_entry; read_wiki_page clinic_data_policy\",\n \"suspected_issues\": [\n  \"Respiratory case definition (ICD-10 codes) is not documented in the catalog.\",\n  \"Whether zero-visit days are explicit is not documented.\",\n  \"Visit date vs registration date is not specified.\",\n  \"Data-sharing basis and suppression rules are not documented; the policy page (last_edited 2025-02-01) allows only daily district counts.\",\n  \"Clinic migration or coding breaks are not documented.\",\n  \"Access is by request to Clinical Analytics.\"\n ]\n}\n</candidate>\n\nProfile this one source and call submit_catalog_record."
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQSvgQKEggTEAEYAjgBQgh0aGlua2luZxIMiXe4VypAa13LHGcuGgwll/HrMRFo8zG4kdoiMIAODnDLacIeRCW52VIwb/y1PGvy2SQiq7B8qU2wWTffHb4MZOsv9AR6Z3XDFCQrNSrZA1Uga6l6YxXHIPbeqxXYaGML5iqibZiE6nqpauxk7TZxXXEGVgW/IXv2EjTaqddqNF/NNCf5WxfmYMqB5NcVCWndIwsN1VUqZS+9IHtlEKeC9Sx7rTO/G/t5alKWG/gfra+nC9lx8IdI10OhKr+e7V6WcqG5llKIn+EGHjVwwDkVd0aCnZ+6f1hgfxf22r/W+TeFUepAYe0sSe6UY5ZeiI4GWGl2Oml0GTeMHrrCg74KU6x0UJFHOak1pxL/DaooS7ZKLXSNbTJxK36wy/2wWAx17vCSXQfsjIM+Dzd47rddz7ZXGJtN9vD/H84UhxjBzqRjHI+PhzA5ondaA7qi1e7cvG6JqtR8NkVjileOYhMOzRHJL+Db1M/jNuAoW3Dpb5eY1VElB4czts7O9d8gTx2an/lXRKfjmA1GnVKoWg8kKtNGwc5B6KJHAaOO/hDz6sj6W5ZHr4FBzoXkfaxnixP4KHPSU4JiWVLVVo4X70kxUzqPv8qi7fMHbPhMv60tllkzn/ayfj7n56AAWinrqf1I91j0mPU2iGwiN4/AdZv29DUfpmZ+Aq/MAkwoOIodYxIHRntzABv4X3tWHUf7wlySEuGo4OlM1tCgrzMu2l0oW1FCRz7RsC0BGAE=",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_bdrk_01LqXAmfJf9xs74DhKw1qNe6",
+     "input": {
+      "entry_id": "internal.clinic.resp_visits_daily"
+     },
+     "name": "get_catalog_entry",
+     "type": "tool_use"
+    },
+    {
+     "id": "toolu_bdrk_01LCeErZ5yyKVQyEkMHtHXtz",
+     "input": {
+      "page_id": "clinic_data_policy"
+     },
+     "name": "read_wiki_page",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_bdrk_01LqXAmfJf9xs74DhKw1qNe6",
+     "content": "{\"source_id\": \"internal.clinic.resp_visits_daily\", \"entry\": {\"id\": \"clinic.resp_visits_daily\", \"display_name\": \"Respiratory visits (daily, by district)\", \"description\": \"Respiratory clinic visits counted per day and per district. Contains no patient identifiers.\", \"domain\": \"Clinical\", \"owner\": \"Clinical Analytics\", \"steward\": \"Chiara Conti\", \"status\": \"active\", \"classification\": \"internal\", \"contains_pii\": false, \"grain\": \"daily\", \"temporal_coverage\": {\"start\": \"2022-01-01\", \"end\": null}, \"refresh_cadence\": \"daily\", \"last_refreshed\": \"2026-10-14\", \"location\": \"azure://valdena-health/clinic/resp_visits_daily\", \"access\": {\"method\": \"warehouse_sql\", \"request_process\": \"Request to Clinical Analytics\"}, \"row_count_approx\": 40000, \"columns\": [{\"name\": \"visit_date\", \"type\": \"date\", \"description\": \"Day of the visits\", \"pii\": false}, {\"name\": \"district\", \"type\": \"string\", \"description\": \"District of residence\", \"pii\": false}, {\"name\": \"visit_count\", \"type\": \"integer\", \"description\": \"Respiratory visits that day\", \"pii\": false}]}, \"wiki_backlinks\": [\"clinic_data_policy\"], \"catalog_exported_at\": \"2026-10-14T06:00:00Z\"}"
+    },
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_bdrk_01LCeErZ5yyKVQyEkMHtHXtz",
+     "content": "{\"page_id\": \"clinic_data_policy\", \"title\": \"Clinic data policy for surveillance\", \"owner\": \"Data Protection Office\", \"last_edited\": \"2025-02-01\", \"body\": \"# Clinic data policy for surveillance\\n- Patient-level visit records (`clinic.patient_visits`) may not be used for this analysis.\\n- Only daily counts by district (`clinic.resp_visits_daily`) may be used for this purpose.\\n- Patient postcode and age band are personal data. They must not leave the clinic systems for analysis.\"}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "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",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_bdrk_0114cH2sg5dQ7AtbyaqHwZgp",
+     "input": {
+      "source_id": "internal.clinic.resp_visits_daily",
+      "kind": "internal",
+      "title": "Respiratory visits (daily, by district), Clinical Analytics",
+      "summary": "Daily counts of respiratory clinic visits per district of residence, with three columns (visit_date, district, visit_count) and no patient identifiers, per the catalog. Approximately 40,000 rows, stated as coverage from 2022-01-01 with no end date and a daily refresh. It is the only clinic dataset the wiki policy allows for this surveillance purpose, and it covers the production window (2024-2025) for need N4 only.",
+      "schema": {
+       "documented": "structured",
+       "field_count": 3,
+       "fields": [
+        {
+         "name": "visit_date",
+         "type": "date",
+         "description": "Day of the visits",
+         "pii": false,
+         "unit": null
+        },
+        {
+         "name": "district",
+         "type": "string",
+         "description": "District of residence",
+         "pii": false,
+         "unit": null
+        },
+        {
+         "name": "visit_count",
+         "type": "integer",
+         "description": "Respiratory visits that day",
+         "pii": false,
+         "unit": "visits"
+        }
+       ],
+       "notes": "Column descriptions are one line each. No ICD-10 case definition, date-type definition (visit vs registration) or zero-day convention is documented."
+      },
+      "temporal": {
+       "start": "2022-01-01",
+       "end": null,
+       "grain": "daily",
+       "metadata_last_updated": "2026-10-14",
+       "open_ended": true,
+       "refresh_cadence": "daily"
+      },
+      "spatial": {
+       "coverage": [
+        "IT"
+       ],
+       "code_system": "free-text district names (not stated as ISTAT or other standard codes)",
+       "notes": "Valdena Civic Health Office, northern Italy. District coding scheme is not documented in the catalog entry."
+      },
+      "ownership": {
+       "owner": "Clinical Analytics",
+       "publisher": null,
+       "steward": "Named steward listed in catalog (not recorded here); policy page owner is the Data Protection Office"
+      },
+      "licence": {
+       "name": "internal",
+       "agreement_status": null,
+       "attribution_text": null,
+       "commercial_use": "not_applicable",
+       "evidence": "get_catalog_entry internal.clinic.resp_visits_daily: classification 'internal'; wiki clinic_data_policy (owner Data Protection Office, last_edited 2025-02-01) restricts use to daily district counts for this surveillance purpose.",
+       "mixed_sources": false,
+       "url": null
+      },
+      "access": {
+       "method": "warehouse_sql",
+       "auth_required": true,
+       "reachable": null,
+       "classification": "internal",
+       "request_process": "Request to Clinical Analytics",
+       "approx_size_bytes": null
+      },
+      "declared_metadata": {
+       "contains_pii": false,
+       "classification": "internal",
+       "status": "active",
+       "grain": "daily",
+       "row_count_approx": 40000,
+       "refresh_cadence": "daily",
+       "last_refreshed": "2026-10-14"
+      },
+      "documentation_excerpts": [
+       "Respiratory clinic visits counted per day and per district. Contains no patient identifiers. (catalog description)",
+       "Only daily counts by district (`clinic.resp_visits_daily`) may be used for this purpose. (wiki clinic_data_policy, last_edited 2025-02-01)",
+       "Patient postcode and age band are personal data. They must not leave the clinic systems for analysis. (wiki clinic_data_policy)"
+      ],
+      "quality_notes": [
+       "Not sampled: access is by request to Clinical Analytics via warehouse_sql, so no data profile was obtained. Reachability is unverified, not confirmed.",
+       "Respiratory case definition (ICD-10 codes) is not documented in the catalog or the policy page.",
+       "Whether zero-visit days are written as explicit zero rows or omitted is not documented; this matters for daily counts.",
+       "Visit date versus registration date is not specified for visit_date.",
+       "No documentation of small-cell suppression or disclosure rules for district counts; the policy page only restricts to daily district counts.",
+       "No documentation of clinic migrations, coding changes or breaks in the series since 2022-01-01.",
+       "Coverage starts 2022-01-01 and does not include the prototype window (2004-03-10 to 2005-04-04); it is relevant only to need N4 in the production window.",
+       "Policy and catalog agree on the dataset name and daily-count restriction; the policy (2025-02-01) predates the catalog export (2026-10-14), and no later change to the policy is recorded in the sources read."
+      ],
+      "provenance": [
+       {
+        "claim": "Catalog describes the dataset as daily respiratory visit counts by district, no patient identifiers, owner Clinical Analytics, status active, classification internal",
+        "evidence": "get_catalog_entry internal.clinic.resp_visits_daily"
+       },
+       {
+        "claim": "Temporal coverage 2022-01-01 with no end, daily refresh, last refreshed 2026-10-14, approx 40,000 rows",
+        "evidence": "get_catalog_entry internal.clinic.resp_visits_daily (temporal_coverage, refresh_cadence, last_refreshed, row_count_approx)"
+       },
+       {
+        "claim": "Only daily district counts may be used for surveillance; patient-level records are excluded; postcode and age band are personal data",
+        "evidence": "read_wiki_page clinic_data_policy (owner Data Protection Office, last_edited 2025-02-01)"
+       },
+       {
+        "claim": "Columns are visit_date (date), district (string), visit_count (integer)",
+        "evidence": "get_catalog_entry internal.clinic.resp_visits_daily (columns)"
+       }
+      ],
+      "unknowns": [
+       "Respiratory case definition (ICD-10 codes) used for counting",
+       "Whether zero-visit days are explicit rows",
+       "Whether visit_date is the visit day or registration day",
+       "District coding scheme and its join keys to other geographies",
+       "Small-cell suppression or disclosure rules for publishing or sharing district counts",
+       "Clinic migrations, coding breaks or missing periods since 2022",
+       "Actual data values, null rates and date range (not sampled; access by request)",
+       "Whether the warehouse table is currently reachable for the analysis team",
+       "Any agreement or approval specific to sharing outside Clinical Analytics"
+      ],
+      "status": "active",
+      "location": "azure://valdena-health/clinic/resp_visits_daily",
+      "sample_findings": [],
+      "canonical_ref": null
+     },
+     "name": "submit_catalog_record",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_bdrk_0114cH2sg5dQ7AtbyaqHwZgp",
+     "content": "accepted"
+    }
+   ]
+  }
+ ]
+}

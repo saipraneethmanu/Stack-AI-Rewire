@@ -1,0 +1,137 @@
+{
+  "source_id": "internal.sales.daily_by_product",
+  "kind": "internal",
+  "title": "Daily sales by product (till system), Valdena Gelato",
+  "summary": "Units sold and revenue in EUR per product code per day, taken from the shop till system, owned by Retail Operations. The catalog gives about 310,000 rows, with temporal coverage from 2022-01-01 and no end date, refreshed daily. The grain is daily by product code. Two wiki pages flag a till replacement gap (2024-02-05 to 2024-03-10) and a product code change from 2024-04-01 with no mapping table. The data was not sampled: access is by warehouse SQL request only.",
+  "schema": {
+    "documented": "structured",
+    "field_count": 4,
+    "fields": [
+      {
+        "name": "sale_date",
+        "type": "date",
+        "description": "Day of sale",
+        "pii": false,
+        "unit": null
+      },
+      {
+        "name": "product_code",
+        "type": "string",
+        "description": "Product code, see the product list (sales.products, current codes only)",
+        "pii": false,
+        "unit": null
+      },
+      {
+        "name": "units_sold",
+        "type": "integer",
+        "description": "Units sold that day",
+        "pii": false,
+        "unit": "units"
+      },
+      {
+        "name": "revenue_eur",
+        "type": "numeric",
+        "description": "Revenue in euros that day",
+        "pii": false,
+        "unit": "EUR"
+      }
+    ],
+    "notes": "Catalog column list only. Net-of-refund/void treatment is not stated. No sample was read."
+  },
+  "temporal": {
+    "start": "2022-01-01",
+    "end": null,
+    "grain": "daily",
+    "metadata_last_updated": "2026-10-14",
+    "open_ended": true,
+    "refresh_cadence": "daily"
+  },
+  "spatial": {
+    "coverage": [
+      "IT"
+    ],
+    "code_system": "free-text / shop-level (single shop; no geography column)",
+    "notes": "Catalog does not state the shop location explicitly; the use case describes Valdena as a northern Italy shop (fictional client). No place column in the data."
+  },
+  "ownership": {
+    "owner": "Retail Operations",
+    "publisher": null,
+    "steward": "listed in catalog (individual name withheld)"
+  },
+  "licence": {
+    "name": "internal",
+    "evidence": "Catalog entry internal.sales.daily_by_product: classification 'confidential', no licence field. Access via warehouse SQL request to Retail Operations.",
+    "url": null,
+    "commercial_use": "not_applicable",
+    "agreement_status": null,
+    "attribution_text": null,
+    "mixed_sources": false
+  },
+  "access": {
+    "method": "warehouse_sql",
+    "auth_required": true,
+    "reachable": null,
+    "classification": "confidential",
+    "request_process": "Request to Retail Operations (catalog access.request_process)",
+    "approx_size_bytes": null
+  },
+  "declared_metadata": {
+    "classification": "confidential",
+    "contains_pii": false,
+    "status": "active",
+    "grain": "daily",
+    "row_count_approx": 310000,
+    "refresh_cadence": "daily",
+    "last_refreshed": "2026-10-14"
+  },
+  "documentation_excerpts": [
+    "Units sold and revenue per product per day, from the till system. (catalog description)",
+    "The till system was replaced between 2024-02-05 and 2024-03-10. No sales were recorded in that period. Treat those days as missing, not as zero sales. sales.daily_by_product has no rows for those days. (wiki till_migration_2024, last_edited 2024-03-12)",
+    "From 2024-04-01, product codes changed. Codes ending in \"L\" were replaced by new codes. No mapping table exists between the old and new codes. Old and new codes can only be matched by product name, and some names are not unique. sales.products lists only the current codes. (wiki product_codes_2024, last_edited 2024-04-02)"
+  ],
+  "quality_notes": [
+    "Till gap confirmed by wiki till_migration_2024 (2024-03-12): no rows 2024-02-05 to 2024-03-10; wiki says treat as missing, not zero. The catalog itself does not mention the gap. The wiki's 'no sales were recorded' does not say whether the shop was closed, so the cause is unknown.",
+    "Product code change confirmed by wiki product_codes_2024 (2024-04-02): from 2024-04-01 codes ending in 'L' were replaced; no mapping table exists; matching is by name only and some names are not unique. The companion catalog entry internal.sales.products (product list) holds current codes only, last refreshed 2025-03-31, so it cannot map old codes. This affects need N2 (must): this source does not provide the mapping.",
+    "Catalog and wiki disagree on nothing material, but both wiki pages were last edited in 2024 (till 2024-03-12, product codes 2024-04-02) while the catalog was refreshed 2026-10-14. Any later till or code changes are not documented.",
+    "Refunds and voids: neither the catalog nor the wiki states whether units_sold and revenue_eur are net of refunds/voids. Unknown.",
+    "Revenue currency: catalog says 'Revenue in euros'; no tax (VAT/IVA) treatment stated. Unknown whether revenue is gross or net of VAT.",
+    "row_count_approx 310000 is not reconciled with the stated grain (daily by product code, about 64 current products over roughly 4.8 years). The count may include more codes or history; not verified without querying.",
+    "Classification is 'confidential' (catalog), so access needs a request to Retail Operations; reachability was not tested and no data was read.",
+    "Candidate's 'suspected_issues' item on the catalog description of currency is partly accurate: EUR is documented in prose only (column description), not as a unit field."
+  ],
+  "provenance": [
+    {
+      "claim": "Catalog entry: owner Retail Operations, classification confidential, contains_pii false, grain daily, temporal_coverage 2022-01-01 to null, refresh daily, last_refreshed 2026-10-14, row_count_approx 310000, access warehouse_sql via request to Retail Operations, four columns",
+      "evidence": "get_catalog_entry internal.sales.daily_by_product"
+    },
+    {
+      "claim": "Till replacement gap 2024-02-05 to 2024-03-10; treat as missing not zero; no rows for those days",
+      "evidence": "read_wiki_page till_migration_2024 (last_edited 2024-03-12)"
+    },
+    {
+      "claim": "Product codes ending 'L' replaced from 2024-04-01; no mapping table; name-only matching; names not unique; product list has current codes only",
+      "evidence": "read_wiki_page product_codes_2024 (last_edited 2024-04-02)"
+    },
+    {
+      "claim": "Product list companion source: current codes only, last refreshed 2025-03-31, open to analytics roles",
+      "evidence": "get_catalog_entry internal.sales.products"
+    },
+    {
+      "claim": "Search returned this source and both wiki pages as the only relevant hits for the sales query",
+      "evidence": "search_internal_catalog 'Valdena daily sales by product till'"
+    }
+  ],
+  "unknowns": [
+    "Whether units_sold and revenue_eur are net of refunds and voids",
+    "Whether revenue_eur includes VAT",
+    "Cause of the 2024-02-05 to 2024-03-10 gap (closure vs data loss)",
+    "Any till or product code changes after 2024 (wiki pages last edited 2024)",
+    "Actual data content, date range and row counts: not sampled; access requires a Retail Operations request",
+    "Whether the till gap or code change is covered by any mapping outside this catalog",
+    "Shop location and opening calendar (needed for N5 and to interpret zero-sales days)",
+    "Whether the catalog's 2022-01-01 start is actual data start or a nominal start"
+  ],
+  "status": "active",
+  "location": "azure://valdena-gelato/sales/daily_by_product",
+  "canonical_ref": "sales.daily_by_product"
+}

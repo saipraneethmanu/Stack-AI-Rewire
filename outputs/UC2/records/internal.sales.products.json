@@ -1,0 +1,126 @@
+{
+  "source_id": "internal.sales.products",
+  "kind": "internal",
+  "title": "Product list (current product codes, names and categories)",
+  "summary": "Static product master for the Valdena Gelato shop: one row per current product code with product name and category (about 64 rows per catalog). It lists only the codes in use after the 2024 code change, so it cannot map pre-2024 codes to current ones; the wiki states there is no mapping table and that codes can only be matched by name, and names are not always unique. Owned by Retail Operations, stewarded by Marco Bianchi, refreshed on change (last refreshed 2025-03-31 per catalog).",
+  "schema": {
+    "documented": "structured",
+    "field_count": 3,
+    "fields": [
+      {
+        "name": "product_code",
+        "type": "string",
+        "description": "Current product code",
+        "pii": false
+      },
+      {
+        "name": "product_name",
+        "type": "string",
+        "description": "Product name",
+        "pii": false
+      },
+      {
+        "name": "category",
+        "type": "string",
+        "description": "Product category",
+        "pii": false
+      }
+    ],
+    "notes": "Catalog columns only. Not sampled. Catalog describes product_code as current only."
+  },
+  "temporal": {
+    "start": null,
+    "end": null,
+    "grain": "static",
+    "metadata_last_updated": "2025-03-31",
+    "open_ended": null,
+    "refresh_cadence": "on change"
+  },
+  "spatial": {
+    "coverage": [
+      "unknown"
+    ],
+    "code_system": null,
+    "notes": "No geography in the entry; the shop is in northern Italy per the use case spec."
+  },
+  "ownership": {
+    "owner": "Retail Operations",
+    "publisher": null,
+    "steward": "Marco Bianchi"
+  },
+  "licence": {
+    "name": "internal",
+    "evidence": "catalog entry internal.sales.products: classification 'internal', contains_pii false",
+    "commercial_use": "not_applicable",
+    "agreement_status": null,
+    "attribution_text": null,
+    "mixed_sources": false,
+    "url": null
+  },
+  "access": {
+    "method": "warehouse_sql",
+    "auth_required": null,
+    "reachable": null,
+    "classification": "internal",
+    "request_process": "Open to analytics roles (catalog access.request_process). Access not tested.",
+    "approx_size_bytes": null
+  },
+  "declared_metadata": {
+    "status": "active",
+    "classification": "internal",
+    "contains_pii": false,
+    "grain": "static",
+    "refresh_cadence": "on change",
+    "last_refreshed": "2025-03-31",
+    "row_count_approx": 64,
+    "temporal_coverage": {
+      "start": null,
+      "end": null
+    }
+  },
+  "documentation_excerpts": [
+    "Catalog: 'Current product codes, names and categories.'",
+    "Catalog column product_code: 'Current product code'",
+    "Wiki product_codes_2024 (last_edited 2024-04-02): 'From 2024-04-01, product codes changed. Codes ending in \"L\" were replaced by new codes.'",
+    "Wiki product_codes_2024: 'No mapping table exists between the old and new codes.'",
+    "Wiki product_codes_2024: 'Old and new codes can only be matched by product name, and some names are not unique.'",
+    "Wiki product_codes_2024: '`sales.products` lists only the current codes.'",
+    "Wiki till_migration_2024 (last_edited 2024-03-12): 'No sales were recorded in that period. Treat those days as missing, not as zero sales.' (period 2024-02-05 to 2024-03-10)"
+  ],
+  "quality_notes": [
+    "Does not meet N2 on its own: it holds current codes only, so pre-2024 codes (codes ending in 'L', replaced from 2024-04-01) are absent. No mapping table exists, per wiki product_codes_2024.",
+    "Name-based matching is only a partial route: wiki product_codes_2024 says some names are not unique, so a name join could map one old code to several new ones. Not tested against data.",
+    "Freshness: catalog last_refreshed 2025-03-31 and refresh 'on change'. The wiki page product_codes_2024 was last edited 2024-04-02 and does not state a refresh date. Whether codes added after 2025-03-31 are present is unknown; the 2025-06 to 2026-03 recent window is not covered by this refresh date.",
+    "Catalog and wiki agree that the table holds current codes only and that there is no mapping. No conflict found.",
+    "Related gap, not in this table: till_migration_2024 says no sales rows exist for 2024-02-05 to 2024-03-10, which falls inside the history window (2023-06-01 to 2025-05-31). These days must be treated as missing, not zero.",
+    "Catalog temporal_coverage is null, so the period this table describes is undocumented."
+  ],
+  "provenance": [
+    {
+      "claim": "Catalog fields: description 'Current product codes, names and categories', owner Retail Operations, steward Marco Bianchi, grain static, refresh 'on change', last_refreshed 2025-03-31, row_count_approx 64, three columns (product_code, product_name, category), no PII",
+      "evidence": "get_catalog_entry internal.sales.products"
+    },
+    {
+      "claim": "No mapping table exists; codes changed from 2024-04-01 (codes ending in 'L'); names can match but are not always unique; sales.products lists only current codes",
+      "evidence": "read_wiki_page product_codes_2024 (last_edited 2024-04-02)"
+    },
+    {
+      "claim": "Till system replaced 2024-02-05 to 2024-03-10 with no sales rows in that period, which must be treated as missing",
+      "evidence": "read_wiki_page till_migration_2024 (last_edited 2024-03-12)"
+    },
+    {
+      "claim": "Candidate page is the only product master found; search returned it alongside sales.daily_by_product, which carries product_code 'see the product list'",
+      "evidence": "search_internal_catalog 'product code change 2024 mapping'"
+    }
+  ],
+  "unknowns": [
+    "Whether the table was ever holding pre-2024 codes or any historical versions (no history recorded in catalog).",
+    "Actual row contents, current row count and whether codes added after 2025-03-31 are present (not sampled; access not tested).",
+    "Whether any name is duplicated across old and new codes, and how many (wiki says only 'some names are not unique').",
+    "Access eligibility for the analytics role and whether a credential is needed for azure://valdena-gelato/sales/products.",
+    "Geographic scope: none stated; assumed to be the single Italian shop."
+  ],
+  "status": "active",
+  "location": "azure://valdena-gelato/sales/products",
+  "canonical_ref": "sales.products"
+}

@@ -1,0 +1,125 @@
+{
+  "candidates": [
+    {
+      "source_id": "internal.airq.station_readings",
+      "kind": "internal",
+      "title": "City station readings (hourly), Environment Monitoring Unit",
+      "need_ids": [
+        "N1"
+      ],
+      "target_windows": [
+        "production"
+      ],
+      "why_relevant": "Only internal source of hourly NO2 and PM2.5 by station (ts_utc, station_id, no2_ugm3, pm25_ugm3). Covers the production window 2024-01-01 to 2025-12-31 if delivered. Cannot serve the prototype window.",
+      "found_via": "search_internal_catalog; get_catalog_entry; read_wiki_page station_network",
+      "suspected_issues": [
+        "Catalog temporal_coverage starts 2023-01-01, so no internal data exists for the 2004-2005 prototype window.",
+        "Wiki station_network (last_edited 2024-07-01): station VR-03 (Via Roma) switched off 2024-06-30, but the catalog still lists the network as active and has no note on this.",
+        "Access is by request to the Environment Monitoring Unit; the catalog gives no delivery status, so the 2024-2025 extract is not yet available.",
+        "PM2.5 vs NO2 completeness per station and gap share are undocumented; no station coordinates in the catalog (needed to match weather and traffic).",
+        "Catalog end date is null and the source refreshes hourly; the last 2026 months may be provisional."
+      ]
+    },
+    {
+      "source_id": "internal.traffic.hourly_counts",
+      "kind": "internal",
+      "title": "Road traffic counts (hourly), Mobility Office",
+      "need_ids": [
+        "N2"
+      ],
+      "target_windows": [
+        "production"
+      ],
+      "why_relevant": "Only internal source of hourly vehicle counts by road counter near the monitoring stations. Its coverage (from 2021) includes the production window.",
+      "found_via": "search_internal_catalog; get_catalog_entry; read_wiki_page counter_replacement_2024",
+      "suspected_issues": [
+        "Wiki counter_replacement_2024 (last_edited 2024-04-02): counters replaced on 2024-03-18; counts change from per-direction to both-directions combined. Catalog has no note, so the series break is not visible in the catalog.",
+        "timestamp is ts_local (local time), not UTC, so alignment with ts_utc air-quality data is needed.",
+        "Distance from each counter to each monitoring station is not documented, and the catalog does not say which counters are near which station.",
+        "Gaps, outages and the method behind counts are undocumented.",
+        "Restriction or lockdown regime changes in 2024-2025 are not flagged."
+      ]
+    },
+    {
+      "source_id": "internal.clinic.resp_visits_daily",
+      "kind": "internal",
+      "title": "Respiratory visits (daily, by district), Clinical Analytics",
+      "need_ids": [
+        "N4"
+      ],
+      "target_windows": [
+        "production"
+      ],
+      "why_relevant": "Daily respiratory visit counts by district, with no patient identifiers. The clinic policy names it as the only clinic dataset that may be used. Coverage from 2022 includes the production window.",
+      "found_via": "search_internal_catalog; get_catalog_entry; read_wiki_page clinic_data_policy",
+      "suspected_issues": [
+        "Respiratory case definition (ICD-10 codes) is not documented in the catalog.",
+        "Whether zero-visit days are explicit is not documented.",
+        "Visit date vs registration date is not specified.",
+        "Data-sharing basis and suppression rules are not documented; the policy page (last_edited 2025-02-01) allows only daily district counts.",
+        "Clinic migration or coding breaks are not documented.",
+        "Access is by request to Clinical Analytics."
+      ]
+    },
+    {
+      "source_id": "api.open_meteo_archive",
+      "kind": "public_api",
+      "title": "Open-Meteo Historical Weather API (reanalysis)",
+      "need_ids": [
+        "N3"
+      ],
+      "target_windows": [
+        "prototype",
+        "production"
+      ],
+      "why_relevant": "Only register source for hourly temperature and humidity. It is the only candidate that could cover both windows with one consistent source. Coordinates must be set to a client-justified Italian location, not the register default.",
+      "found_via": "list_external_register; search_internal_catalog 'weather station observations hourly'",
+      "suspected_issues": [
+        "Register default_query uses Lisbon coordinates (38.72, -9.14), which are not the client's location. Coordinates must be set by a human assumption and recorded in decisions.md.",
+        "Output is modelled reanalysis at roughly 10 km grid, not station observation; urban smoothing caveat applies.",
+        "Register default timezone is UTC; the air-quality and traffic sources use different time bases, so alignment is needed.",
+        "Register lists prototyping and production as approved purposes; commercial-use terms are not confirmed in the register and must be checked at terms_url.",
+        "Coverage for the 2004-03-10 to 2005-04-04 window and humidity variable availability are not yet profiled (register lists only temperature_2m and shortwave_radiation in the default query)."
+      ]
+    },
+    {
+      "source_id": "vendor.atmosdata_pro",
+      "kind": "vendor_feed",
+      "title": "AtmosData Pro station-grade weather feed (fictional vendor)",
+      "need_ids": [
+        "N3"
+      ],
+      "target_windows": [
+        "production"
+      ],
+      "why_relevant": "Would have been a station-grade weather source for the production window, but the agreement has ended. Listed so the Risk Assessor records that it cannot be used.",
+      "found_via": "list_external_register; search_internal_catalog 'AtmosData weather observations feed' (no hits)",
+      "suspected_issues": [
+        "Agreement AD-2021-114 ended 2025-12-31; renewal awaiting Procurement, no signed renewal on file.",
+        "API key revoked 2026-01-01 per register.",
+        "Approved_purposes is empty. Must not be used for production or the 2024-2025 window without a signed renewal."
+      ]
+    }
+  ],
+  "searches_run": [
+    "hourly air quality station readings NO2 PM2.5 Valdena",
+    "traffic counts hourly road sensors Valdena",
+    "hourly weather temperature humidity Valdena",
+    "respiratory clinic visits daily by district",
+    "patient-level clinic visit records",
+    "national mortality PM2.5 attributable deaths",
+    "weather station observations hourly temperature humidity city meteo network",
+    "AtmosData weather observations feed",
+    "historical hourly air quality open data archive Italy prototype 2004"
+  ],
+  "unmet_needs": [
+    "N1 prototype (2004-03-10 to 2005-04-04): no internal source (airq.station_readings starts 2023-01-01) and no register source for air quality. A human must supply and approve a public hourly NO2/PM2.5 link for an Italian urban station, and check its licence at the source page. Station coverage of NO2 vs PM2.5 in 2004-2005 is unknown.",
+    "N2 prototype: not needed for this window by the spec, so no source is required.",
+    "N2 production: internal traffic.hourly_counts is a candidate, but no counter is documented as being within a stated distance of a station, and the 2024-03-18 counter change is not adjusted. A human must confirm link-to-station mapping and ownership. No register source covers traffic.",
+    "N3 production: the only register source is Open-Meteo (modelled). The AtmosData station feed is expired. A city or regional station network for 2024-2025 is not found in the catalog or register; a human should check whether one exists.",
+    "N4: internal candidate found, but the respiratory ICD code list, the data-sharing basis (GDPR) and suppression rules are not documented in any source reviewed.",
+    "N5: excluded. Patient-level clinic data (clinic.patient_visits) is restricted and the clinic data policy forbids its use for this analysis.",
+    "N6: no internal or register source. A human should supply an ISTAT, EEA or WHO link for Italy-level annual PM2.5-attributable deaths covering 2004-2005 and 2024-2025, with the estimation method and vintage recorded.",
+    "Client city not named in any source: the coordinates for Open-Meteo and the prototype station location need a human-approved assumption (decisions.md)."
+  ]
+}

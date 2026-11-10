@@ -1,0 +1,236 @@
+{
+ "agent": "planner",
+ "system": "# Operating rules (all discovery agents)\n\nYou are one agent in a data-discovery system. The goal is to locate, catalog and assess the feasibility of data sources for a business problem **before any pipeline is built**.\n\n- **Metadata first, then a small sample, never the whole dataset.** Work from catalog entries, wiki pages, API metadata, landing pages, descriptors and terms pages. You may read a capped sample of a data file with `sample_data_file` to check structure and quality, but never try to download a whole dataset. Do not copy personal data (names, emails, addresses, ids) into your output.\n- **Provenance.** Every claim you make about a source must be traceable to a tool call (tool name and argument), a URL, a catalog field or a wiki page id.\n- **Unknown stays unknown.** If no source states a licence, owner, refresh cadence, consent or coverage date, record null or \"unknown\" and say so. Never infer one from what is typical.\n- **Guardrails are findings.** A refused host (DOMAIN_NOT_ALLOWLISTED), a timeout, a 401/403, an expired agreement or a restricted table is evidence to record. Do not look for another route to the same data.\n- **Documentation beats catalog metadata when it is more specific or more recent.** When they disagree, record both, with dates.\n- **Be economical.** Use the fewest tool calls that answer the question, and run independent calls in parallel. Stop when you have enough evidence, and finish by calling your submit tool.\n\n\n# Role: Planner\n\nYou turn a business brief into a **search plan**: for every need in the use-case spec, where the data probably lives and how to recognise it.\n\nFor each need (all of them, using the ids from the spec):\n- `interpretation`: what the data must look like to satisfy the need (entity, grain, window, geography), in one or two sentences.\n- `internal_queries`: 2–5 plain-language queries for the internal catalog and wiki. Include synonyms and internal jargon (abbreviations, system names, renamed tables), not only the words in the brief.\n- `external_data_hints`: 0–3 short descriptions of an **external dataset a human could find and link** if internal data and the register fall short. Give the kind of publisher or portal (statistics office, open-data portal, research repository, TSO, ...), the grain, period and geography it must have, and the trap to avoid. Use [] when only internal data can serve the need (for example consent). The human sees these hints at the candidate gate.\n- `register_ids`: ids from the external sources register (call `list_external_register`) that could serve the need.\n- `acceptance_criteria`: concrete tests a candidate must pass (window covered, grain at least X, geography, key available, lawful basis, ...).\n- `likely_pitfalls`: what usually goes wrong for this kind of data (renamed or migrated tables, unit changes, consent captured late, superseded copies, code systems that do not join, ...).\n\nAlso give an `objective_summary` (what decision the data supports) and `open_questions` that only a human can answer. Do not search the catalog yourself; that is the Scout's job.\n",
+ "messages": [
+  {
+   "role": "user",
+   "content": "<use_case_spec>\n{\n \"id\": \"UC1\",\n \"title\": \"Air quality and traffic: can we explain poor-air days and warn clinic patients in time?\",\n \"client\": \"Valdena Civic Health Office (fictional, northern Italy)\",\n \"as_of\": \"2026-10-15\",\n \"geography\": {\n  \"primary\": [\n   \"IT\"\n  ],\n  \"secondary\": []\n },\n \"windows\": [\n  {\n   \"id\": \"prototype\",\n   \"start\": \"2004-03-10\",\n   \"end\": \"2005-04-04\",\n   \"purpose\": \"Build the method on public hourly air-quality readings while the city's own station data is requested.\"\n  },\n  {\n   \"id\": \"production\",\n   \"start\": \"2024-01-01\",\n   \"end\": \"2025-12-31\",\n   \"purpose\": \"Two years of the city's own station, traffic and clinic data for the live warning model.\"\n  }\n ],\n \"needs\": [\n  {\n   \"id\": \"N1\",\n   \"name\": \"Hourly air-pollutant concentrations (for example NO2 or PM2.5)\",\n   \"priority\": \"must\",\n   \"min_grain\": \"hourly\",\n   \"windows\": [\n    \"prototype\",\n    \"production\"\n   ]\n  },\n  {\n   \"id\": \"N2\",\n   \"name\": \"Hourly vehicle traffic near the monitoring stations\",\n   \"priority\": \"must\",\n   \"min_grain\": \"hourly\",\n   \"windows\": [\n    \"production\"\n   ]\n  },\n  {\n   \"id\": \"N3\",\n   \"name\": \"Hourly temperature and humidity\",\n   \"priority\": \"must\",\n   \"min_grain\": \"hourly\",\n   \"windows\": [\n    \"prototype\",\n    \"production\"\n   ]\n  },\n  {\n   \"id\": \"N4\",\n   \"name\": \"Daily respiratory clinic visits, as counts by district\",\n   \"priority\": \"should\",\n   \"min_grain\": \"daily\",\n   \"windows\": [\n    \"production\"\n   ]\n  },\n  {\n   \"id\": \"N5\",\n   \"name\": \"Patient-level clinic visit records\",\n   \"priority\": \"could\",\n   \"min_grain\": \"event\",\n   \"windows\": [\n    \"production\"\n   ]\n  },\n  {\n   \"id\": \"N6\",\n   \"name\": \"National yearly context: deaths linked to PM2.5\",\n   \"priority\": \"could\",\n   \"min_grain\": \"annual\",\n   \"windows\": [\n    \"prototype\",\n    \"production\"\n   ]\n  }\n ]\n}\n</use_case_spec>\n\n<business_brief>\n# UC1: Air quality and traffic\n\n**Client:** Valdena Civic Health Office (fictional, northern Italy)\n**Requested by:** Head of Public Health Surveillance\n**As-of date for this discovery:** 2026-10-15\n\n## Business problem\nOn poor-air days, respiratory patients who visit the clinic are more likely to be unwell. The Health Office wants to warn patients a day ahead when air quality is likely to be poor. Before anyone builds a model, it needs to know which data exists, what each dataset covers, and what must be fixed first.\n\n## Decisions this discovery supports\n1. Can the method be prototyped now on public hourly air-quality data, while the city's own station data is requested?\n2. Does the city's own data cover two years of air quality, traffic and clinic visits at the needed grain?\n3. Which data cannot be used at all, and why?\n4. Which red flags must be resolved before profiling starts?\n\n## Scope\n- **Prototype window:** 2004-03-10 to 2005-04-04, on public hourly readings from an Italian city.\n- **Production window:** 2024-01-01 to 2025-12-31, on the city's own data.\n- **Geography:** Italy. No source names the client's city. Choose a location you can justify, record it as an assumption in `decisions.md`, and set those coordinates in the Open-Meteo call. The register's default (Lisbon) is not the client's location.\n- **Out of scope:** individual patient records. The clinic may only share daily counts by district.\n\n## Needs\nThe canonical list, with IDs, grains and windows, is in `UC1_air_quality.json`. In short:\n\n| ID | Need | Priority |\n|---|---|---|\n| N1 | Hourly air-pollutant concentrations | must |\n| N2 | Hourly vehicle traffic near the monitoring stations | must |\n| N3 | Hourly temperature and humidity | must |\n| N4 | Daily respiratory clinic visits, as counts by district | should |\n| N5 | Patient-level clinic visit records | could |\n| N6 | National yearly context: deaths linked to PM2.5 | could |\n\n## Where to look\n- The internal catalog export and the three wiki pages in `internal/UC1_valdena_health/`.\n- The register: the weather API and the holiday API are tagged for this use case.\n- The three dataset links in `links/UC1_example_links.json`.\n\n</business_brief>\n\nProduce the search plan for every need, then call submit_search_plan."
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQSxAQKEggTEAEYAjgBQgh0aGlua2luZxIMKhRHjaK+bYjRdr+JGgz2oAIPCieofPaHGckiMDgRJRRS/hHHW3mrL6WiBsVmW/v0/8bcC6Bf8tmsDZcr26C500xH/oAnsfZEv0PBuSrfA/DQ/4tIN5Gk0t7tMoF8d+pDgpINlf2IHd2uX4nrmn2A7cue4+Y9mUsePaAKItbdeil5JBOuclwRC9DRBDE+lJY80SyhSoyofJGAsP+YU3xtUyWMVPZ+3hgZ2iW3/xiywpg6l5q67lacvYpgec9kvp2Rq4MqJZZKo422RFlxLK0z/Pu0PtOhYbIKoJ8EWPLTgwKR0b726jJomzCPYnBx0n9MS9wrls13O+91UN3/zlyVFgPT6rBU5U7d53biyvYIXxTvh3ezF7uHa5NWCQ6n9N0v/GMTq31PH3OUyxIT5GOq5EXoTyKD8qCjMMX2+IvvW/WDl9nKYTVoOGF3CCUDkB5PE0GCjj7FfExVx43hT83jD0To8/5cSApcGC7uTmi45m4GbUQgPuGaFvExjQUW7ClWRtLzL25c7iI7ULWIzzjyHu/lwzeYFlvVqGdRM0wJSFEwASUgymvxEWgJkXe4ZiJGct47qOhBX5tyaU9KdFNba88JRltOdZ1Kd3eM9zPkZN+l/slvoPSvXuF1CmrtjEH5xF+6Qg8QAJ2Tx9LgMMk50LSrNvdeujEd7ZfeY8IlKkYxOcuqsUsqZwHPd/rffmWjXhj6Biu0OyJsE/wGgnksljuMUwUx/hbLhBqYfJDuGAE=",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_bdrk_019KkvXwaJYXh5JkrNqzDA5m",
+     "input": {},
+     "name": "list_external_register",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_bdrk_019KkvXwaJYXh5JkrNqzDA5m",
+     "content": "{\"use_case\": \"UC1\", \"sources\": [{\"id\": \"policy.open_data_links\", \"kind\": \"policy\", \"title\": \"Open-data policy for dataset links supplied by analysts\", \"use_cases\": [\"UC1\", \"UC2\"], \"agreement_status\": \"not_required_open_data\", \"approved_purposes\": [\"prototyping\", \"benchmarking\", \"context\"], \"notes\": \"Legal allows publicly available datasets (repositories such as UCI or Zenodo, statistics offices, open-data portals) for prototyping, benchmarking and context, subject to each dataset's own licence as read at its source. Datasets behind a login, with an unknown licence or a non-commercial licence need Legal review before use. Production use of any external dataset needs Legal sign-off.\", \"docs_url\": null, \"terms_url\": null}, {\"id\": \"api.open_meteo_archive\", \"kind\": \"public_api\", \"title\": \"Open-Meteo Historical Weather API (reanalysis)\", \"use_cases\": [\"UC1\", \"UC2\"], \"agreement_status\": \"not_required_open_data\", \"approved_purposes\": [\"prototyping\", \"production\"], \"endpoint\": \"https://archive-api.open-meteo.com/v1/archive\", \"path_params\": [], \"default_query\": {\"latitude\": \"38.72\", \"longitude\": \"-9.14\", \"start_date\": \"2014-01-01\", \"end_date\": \"2014-01-03\", \"hourly\": \"temperature_2m,shortwave_radiation\", \"timezone\": \"UTC\"}, \"param_notes\": \"latitude/longitude decimal degrees; start_date/end_date YYYY-MM-DD; hourly or daily variable lists. Keep probe ranges to a few days.\", \"docs_url\": \"https://open-meteo.com/en/docs/historical-weather-api\", \"terms_url\": \"https://open-meteo.com/en/licence\"}, {\"id\": \"api.nager_public_holidays\", \"kind\": \"public_api\", \"title\": \"Nager.Date public holidays API\", \"use_cases\": [\"UC1\", \"UC2\"], \"agreement_status\": \"not_required_open_data\", \"approved_purposes\": [\"prototyping\", \"production\"], \"endpoint\": \"https://date.nager.at/api/v3/PublicHolidays/{year}/{country}\", \"path_params\": [\"year\", \"country\"], \"default_query\": {}, \"param_notes\": \"country is ISO 3166-1 alpha-2 (PT, GB, FR, ...).\", \"docs_url\": \"https://date.nager.at/Api\", \"terms_url\": \"https://github.com/nager/Nager.Date\"}, {\"id\": \"vendor.atmosdata_pro\", \"kind\": \"vendor_feed\", \"title\": \"AtmosData Pro station-grade weather feed (fictional vendor)\", \"use_cases\": [\"UC1\"], \"agreement_status\": \"expired\", \"agreement_detail\": \"Contract AD-2021-114 ran 2022-01-01 to 2025-12-31. Renewal is waiting on Procurement; no signed renewal on file.\", \"approved_purposes\": [], \"endpoint\": \"https://api.atmosdata.example/v2/observations\", \"auth\": \"API key (revoked 2026-01-01)\", \"docs_url\": null, \"terms_url\": null}]}"
+    }
+   ]
+  },
+  {
+   "role": "assistant",
+   "content": [
+    {
+     "signature": "CAQSxg8KEggTEAEYAjgBQgh0aGlua2luZxIMjr3I/928ILVf8mbGGgyCOxfnDB1Byk2co9siMN9obVAk6tBPqw0qpId4rVBD3I7zhU0S1WHOwm997g0hVjzpimwANz7oBFzL3eOzkCrhDjMVUYM54MmenRHmkOCBHRoZwjB5Q6h3f6vbzclwsuzie/9AJAa3SRLTgTPZLohY4Gn8EG/DHZLCUy5DCfL6NwdtPsH8kwvvpmeO8kE0ySNVsQl+apg/lYQyRDqd8ktoeIaaajC2iXh0XBwp6yufKPZeVncCoYe/nJA0RXTonx8B8N5+FUIH/U1sTE4QB949TdUrWJoNIzSmStUB6uIPkfchI1Amzr6u+1SToyAapjqktad7/EzSTm2F/jzTGlhlp0lWbDRQgAGq7t9OvAguIyvMq2C9TBVJ9Z5ZqE9Tb8n/TlBxMh2BtzbGDlJ83PFCVk1dwterCI6pdiCwqicaTZq5kMdpthwKFcjRDk8VrUxCI7p5kd6gSziJdb5YuImygsuYYIC5Y9FN5FYt2kgCaq0ecpHwJSgw2wmT31l+KwOBUXR8nwQsBRlSBmudXjwCxgr9GT2B9/+J5F3jYjFTZPVuNtqSVAo8W7uC/EftFvG1VEflmxXi8gvTD4Z05WuGbHIM3D2LgrXlFxAgVyNYa7FyomX4huLHRG9ijEeQl/otADXbRmGhn8ljNCZs0GBdyZWhHSoPuW3ZiQYkf3JBrlrXitptk09i5jgbX4TFJsWlOc5AWM0YJa+jEiIZL/56PWt70Mw205G8obEIf8LkFpMtfXaCVILta1Zarrb/3LQLIGXie2J8zeTg3wyFBZVY3CRmcUiYKVcpPzAnmKppNTBydf5uAjdEdrO4xHz83oH7wOtWsNC3hfXSjENSAebjkX9Slgfm9L5cDzI+w7GxMpUsN3Yx7AZma60x2SG3Sbc6GUzCZvhrNQJlHptzNChFoVG5JE0pVHGryY3qUi5c2PX6qLL4AshrnYxfNXje6xJJXSAS/Zx6sHjN/hLwieYPFkT3ii1Lz8kdLQ/a79wduf/zAfxQqxPUpnZFtMNOTmjU9VvfR+q451OFGFCTKheCsFVJplyStHzt61d+T0cxPoAIgYF6mSIXaZbMUM85/NXqT24yM0UUhel/c3dcjGTzJIPmgVNcVPe5RcdvxCY68D+9XcFV7Hginpowt2gcOkUrTK2B/1xcjqVCtGTZfUuPN+ixre3LQXFc8oi8Y9U6WpvA82OvozO4qFHjQGuf+0VjeASd0CidAwAtZJUzWQLhUsYpPdE6epwLF7Uwqbq7E4F0YRFWSKOU3Mn6NtjL+jifiHkex4kVb3WZdneSBGuGolrC8QsfgyEEHOY/6YfSeuy3oNL3P1uMaY91gMHEZAxBVQldYiY4Da0eoK3fCwNw1/x7aiI3sH2/9zJIB9Ax/DmADx2dkwCLappku3SvJVhTBbs1sBY6STdMBjwkXdC62yh6nW0Z6YfOCa1vbZRQWYA3aer4IEZG6NLo+SxYWGcKEbCpsbBOHQSGGM6ydgKWnLTd7hB4MqVpyFcW1y/SNaZd3po3R05pB2fHTH/fNngUdyDzbAtMmz+v6DHM7YpxjL1nRaKiQxj8f0XwBfJnZ5ZpG0mqUKhfe6CknnJtClxkHH73w3rC+dK/a7cbQHaJ3/P/Bm9ypyPo3eJLdrC3BXCoytfcxhoqPMFMR+C9b70TwMGog+O8c9YVIV5tR4rf/UWIvdFlBY7pCfkFhXnV7Vyri+o+zRK0pZ/0/hBfl6E4Q4Um8HCRKwFi4v3N4k/2Ad0bjOH54HIUkg/o71pBic/10/wNORgtr6fwad6uCqRt38IGDmp9cJ7IMzBr6B5HMD7/bGQZOfwSd3MK7OuFDn2PVdIJrw+c2+gVcGF93X5DGrGFg3MrwloS9E51FMUi4+1WmJVzhShvqCiJsqupfFznpyU8KVkeHlMFgapNlVnSMdpqDCpVZzIMNW5Lg5kzB4++CitQj2+VSAUWGTRdPhzNEkB/mBHJbsil/DyhO9GHLjeve/otidItxqpGZKIy0/7nOOK5D4JHD8j9g6inS2QptNDiLcA9chYVbKWWD+L5JMoqsvWpM3+f8bsKrT8yjjwSniRTOVOi0y+XElB/i3FW5npCDMq/PP9s9tzlnfZ0EmsqBHuzifvbUb6V1BIfJDrgACAI5bYpkmB8c/7Kk2UQiFRTMu6504emDq6R6vHMwsoukDXYFkdPnwGdjgtWs1vMrQ8nVqEXOEvDYIIdIIN4dWqiyEXZPPl2CPd9RiO3HpiFIPSPg2XE7XY9AZgwiqhXgSQkt7tdJwXrBvX96HaO9qJhcak65sJQ6Wpd8L6Vv293YZEx7e+jdo1EEdj9oKbyB4bFjLZ+8eX+K4Mv7nV/zHK2w1De3qKI3sU/5z6rFDkR86IckN811Pt2N3kSoBYj5gK038RPlPvvPd/Ld6hAuHlcAxysJW8EWM/EX7G65O6Bu56Eq4K8UXE8Tk9M+oxPLMp7WTKE5V1UWGBHdMyuWPEU2NzGWJAY15UKSa2FyZXmH5s2vMft+7OZ519mOAdnAYhhZqfdK2c1isGF49cb+wWI6XvHp5hW2/pD+eFTpEU/g4uPPuSNwvIDxnGeSorTXVddEm/kfSbN8zIhu+tvGAE=",
+     "thinking": "",
+     "type": "thinking"
+    },
+    {
+     "id": "toolu_bdrk_01PmFMKTKvu7uiHYBMM7VCSD",
+     "input": {
+      "use_case": "UC1 - Air quality and traffic: explaining poor-air days and warning clinic patients a day ahead (Valdena Civic Health Office, IT; as of 2026-10-15)",
+      "objective_summary": "Decide whether the poor-air-day warning method can be prototyped now on public hourly Italian air-quality readings (2004-03-10 to 2005-04-04), and whether the city's own two-year production data (2024-2025) covers air quality, traffic and daily district-level respiratory clinic counts at the needed grain. Also identify data that cannot be used and the red flags to resolve before profiling.",
+      "need_plans": [
+       {
+        "need_id": "N1",
+        "interpretation": "Hourly concentrations of NO2 and/or PM2.5 (and ideally PM10/O3) from fixed urban monitoring stations in Italy, covering the prototype window 2004-03-10 to 2005-04-04 and the production window 2024-01-01 to 2025-12-31 from the city's own station network. Must carry station id, pollutant, timestamp, unit and validity flag.",
+        "internal_queries": [
+         "hourly air quality station readings NO2 PM2.5 Valdena",
+         "centralina qualita aria oraria",
+         "city air monitoring station data request status",
+         "ARPA station feed NO2 PM10 hourly",
+         "air quality station register and pollutant codes"
+        ],
+        "external_data_hints": [
+         "Italian regional environmental agency (ARPA) or national environmental body open-data portal, hourly station readings for an urban station in the Po Valley or another northern Italian city, 2004-03 to 2005-04; check the station actually has NO2/PM2.5 in that period (PM2.5 was not routinely measured at all stations in 2004).",
+         "Open-data portal of a northern Italian municipality or region with hourly historical archives; confirm licence on the source page before use (open-data policy: prototyping only without Legal sign-off)."
+        ],
+        "register_ids": [],
+        "acceptance_criteria": [
+         "Hourly grain (no coarser aggregation) across the full prototype window with fewer than an agreed share of gaps, stated per pollutant",
+         "Station location (lat/long or municipality) recorded so that it can be matched to weather and traffic",
+         "Pollutant units and calibration/validation status documented",
+         "Licence or terms stated on the source page and compatible with prototyping; production use flagged for Legal sign-off",
+         "Production window: city station data delivered for 2024-01-01 to 2025-12-31 at hourly grain"
+        ],
+        "likely_pitfalls": [
+         "No register entry covers air quality: the prototype dataset must be found and approved by a human before use",
+         "PM2.5 coverage in 2004-2005 is sparse; NO2 may be the only pollutant with full coverage",
+         "Station codes or names change over time; a station may be relocated or renamed between 2005 and 2024",
+         "Mixed units (µg/m3 vs mg/m3) or local time vs UTC timestamps",
+         "Provisional values in the most recent months of an open-data feed are later revised",
+         "The city's own station data is still only requested: production window is not yet available"
+        ]
+       },
+       {
+        "need_id": "N2",
+        "interpretation": "Hourly vehicle traffic counts or flow proxies on road links within a short distance of each monitoring station, for the production window 2024-01-01 to 2025-12-31. Not needed for the prototype window.",
+        "internal_queries": [
+         "traffic counts hourly road sensors Valdena",
+         "traffico orario spire rilevamento",
+         "traffic loop data by link id",
+         "vehicle flow near air monitoring station",
+         "ZTL or traffic camera counts"
+        ],
+        "external_data_hints": [
+         "Municipal mobility or traffic-management office, or regional transport open-data portal, hourly vehicle counts for road links near the air-quality stations, 2024-2025; the grain must be hourly and the link must be near the station (state the distance)."
+        ],
+        "register_ids": [],
+        "acceptance_criteria": [
+         "Hourly counts (or flow/speed) for 2024-01-01 to 2025-12-31 for at least the links near each station used in N1",
+         "Link-to-station mapping documented with distance",
+         "Counting method and gaps documented (sensor outages, changes of sensor)",
+         "Licence and ownership recorded; any city-owned data flagged for internal sign-off"
+        ],
+        "likely_pitfalls": [
+         "Traffic sensors often cover a few arterial roads only; a station may have no nearby counter",
+         "Sensor replacement or road works break series; counts may be in vehicles per day rather than per hour",
+         "Restrictions (ZTL, lockdowns) change traffic patterns in 2024-2025 and must be flagged as regime changes",
+         "No register source covers traffic; any external candidate needs a human decision"
+        ]
+       },
+       {
+        "need_id": "N3",
+        "interpretation": "Hourly air temperature and relative humidity at or near the monitoring stations, covering both the prototype window (2004-03-10 to 2005-04-04) and the production window (2024-01-01 to 2025-12-31). Weather is used as a driver, so the source must be consistent across the two windows.",
+        "internal_queries": [
+         "hourly weather temperature humidity Valdena",
+         "meteo stazione temperatura umidita",
+         "weather station observations hourly",
+         "AtmosData feed observations (contract expired)",
+         "climate reanalysis hourly temperature"
+        ],
+        "external_data_hints": [
+         "If no city station is available for the prototype, use a reanalysis product (for example ERA5-based) at the client's coordinates; record that it is modelled, not observed. For production, prefer the city or regional meteorological station network if available."
+        ],
+        "register_ids": [
+         "api.open_meteo_archive"
+        ],
+        "acceptance_criteria": [
+         "Hourly temperature_2m and relative humidity available for both windows at the chosen coordinates",
+         "Coordinates, time zone (UTC vs local) and model/station source recorded",
+         "Terms of the Open-Meteo licence checked for the intended use (register lists prototyping and production as approved purposes; confirm commercial-use terms at the licence URL)",
+         "Probe calls kept to a few days; no bulk download in discovery"
+        ],
+        "likely_pitfalls": [
+         "Vendor AtmosData Pro is expired (agreement ended 2025-12-31, key revoked 2026-01-01): do not use it for production or for the 2024-2025 window",
+         "Reanalysis grid cells (~10 km) smooth urban heat and humidity; comparisons with station data need a caveat",
+         "Local time vs UTC shifts the daily pattern and must be aligned with air-quality timestamps",
+         "Coordinates are an assumption (client city not named in any source) and must be confirmed by a human"
+        ]
+       },
+       {
+        "need_id": "N4",
+        "interpretation": "Daily counts of respiratory clinic visits by district for 2024-01-01 to 2025-12-31, from the city's own clinic system, shared as aggregate counts only (no patient-level data).",
+        "internal_queries": [
+         "respiratory clinic visits daily by district",
+         "visite respiratorie ambulatorio conteggio",
+         "clinic visit counts ICD respiratory codes",
+         "health office clinic extract aggregated",
+         "patient visit data sharing agreement"
+        ],
+        "external_data_hints": [],
+        "register_ids": [],
+        "acceptance_criteria": [
+         "Daily grain by district for every day of 2024-01-01 to 2025-12-31, with zero days explicit",
+         "Case definition for 'respiratory' (code list, e.g. ICD-10 J chapter) documented and agreed",
+         "Counts are aggregate with small-cell suppression rules documented",
+         "Data-sharing basis for the clinic-to-office transfer confirmed by a human (GDPR)",
+         "District code system mapped to a standard geography"
+        ],
+        "likely_pitfalls": [
+         "Clinic system migrations can split a series or change coding mid-period",
+         "Visit date vs registration date vs appointment date differ",
+         "Small districts produce small counts that may need suppression",
+         "Holidays and clinic closures produce zero or missing days that look like low demand"
+        ]
+       },
+       {
+        "need_id": "N5",
+        "interpretation": "Event-level clinic visit records (one row per visit) for respiratory patients, for 2024-2025. Out of scope per the brief: individual patient records may not be used. Listed so that the decision is recorded.",
+        "internal_queries": [
+         "patient-level clinic visit records",
+         "individual visit extract",
+         "pseudonymised patient visits",
+         "patient record export respiratory"
+        ],
+        "external_data_hints": [],
+        "register_ids": [],
+        "acceptance_criteria": [
+         "Recorded as excluded unless a human explicitly approves a lawful basis and a data-protection review; default is no use",
+         "If ever approved, no direct identifiers leave the clinic and the extract is pseudonymised with documented re-identification risk"
+        ],
+        "likely_pitfalls": [
+         "Brief says patient-level data is out of scope; using it anyway is a compliance breach",
+         "Pseudonymised patient ids can still be personal data under GDPR",
+         "Consent or legal basis for patient-level sharing is not evidenced in any source reviewed"
+        ]
+       },
+       {
+        "need_id": "N6",
+        "interpretation": "National yearly context on deaths attributable to PM2.5 for Italy, annual grain, covering 2004-2005 (prototype) and 2024-2025 (production). Context only, not a model input.",
+        "internal_queries": [
+         "national mortality PM2.5 attributable deaths",
+         "deaths linked to particulate matter Italy",
+         "EEA health impact PM2.5 annual",
+         "ISTAT mortality yearly context",
+         "WHO air pollution mortality estimates"
+        ],
+        "external_data_hints": [
+         "National statistics office (ISTAT) or European Environment Agency / WHO published annual estimates of PM2.5-attributable deaths for Italy; annual grain, Italy-level, must cover 2004-2005 and 2024-2025 or state the gap. Beware estimates that are model-based and differ by method and year."
+        ],
+        "register_ids": [],
+        "acceptance_criteria": [
+         "Annual Italy-level figure for each year in the windows, or an explicit gap statement",
+         "Estimation method and version stated (model-based estimates are not observed counts)",
+         "Licence/terms of the publisher checked"
+        ],
+        "likely_pitfalls": [
+         "Attributable-death estimates are revised retrospectively; the vintage must be recorded",
+         "Different methods (GBD, EEA, WHO) give different numbers; do not mix them",
+         "Not a model input for hourly prediction"
+        ]
+       }
+      ],
+      "open_questions": [
+       "Which Italian city should the client's coordinates and the prototype station be set in? No source names the city; the Open-Meteo call needs latitude/longitude and the assumption must be recorded in decisions.md.",
+       "Has the city's own air-quality station data request been sent, and what is the expected delivery date for 2024-2025?",
+       "Is there a city traffic-count source for 2024-2025 at hourly grain, and who owns it?",
+       "What is the lawful basis and data-sharing agreement for the district-level daily clinic counts (N4)?",
+       "Is a commercial-use licence needed for Open-Meteo in production, and has Legal reviewed it?",
+       "Which open-data air-quality dataset (for the prototype) has been approved by Legal for prototyping, and does its licence allow that use?",
+       "Is a replacement contract for the expired AtmosData Pro feed planned, and does the production model need it or can Open-Meteo or a city station replace it?",
+       "Which respiratory case definition (ICD-10 codes) does the clinic use?"
+      ]
+     },
+     "name": "submit_search_plan",
+     "type": "tool_use"
+    }
+   ]
+  },
+  {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "tool_use_id": "toolu_bdrk_01PmFMKTKvu7uiHYBMM7VCSD",
+     "content": "accepted"
+    }
+   ]
+  }
+ ]
+}

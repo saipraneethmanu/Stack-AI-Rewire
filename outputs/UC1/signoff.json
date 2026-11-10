@@ -1,0 +1,42 @@
+{
+  "reviewer": "Sai Praneeth",
+  "verdict": "proceed_with_conditions",
+  "conditions": [
+    {
+      "text": "Client Legal confirms in writing which licence governs the UCI 360 file: the CC BY 4.0 licence field or the research-only restriction in the dataset notes. No use of the file until this is answered.",
+      "owner": "Client Legal team (Valdena Civic Health Office)",
+      "due": "2026-12-15"
+    },
+    {
+      "text": "Client Legal decides whether the production use of Open-Meteo (non-commercial free tier) is non-commercial. If not, Procurement buys a subscription before production use. Prototype use is blocked until the same decision is recorded for the prototype window.",
+      "owner": "Client Legal team, then Procurement",
+      "due": "2026-12-15"
+    },
+    {
+      "text": "Mobility Office confirms the 2024-03-18 counter change and provides a counter-to-station mapping, or confirms that no such mapping exists, before any production traffic analysis.",
+      "owner": "Mobility Office (steward Luca Ferri)",
+      "due": "2026-12-31"
+    }
+  ],
+  "agreements": [
+    {
+      "source_id": "link.uci_360",
+      "reason": "The pipeline's FRS-STALE flag is correct on the dates (end 2005-04-04) but does not matter for a historical prototype window that is fully covered. The -200 missing code is documented and the profiler's DQ-METADATA-CONTRADICTION is right to keep it as a condition."
+    },
+    {
+      "source_id": "internal.sales.products",
+      "reason": "This is a current-code product master with no old-code history. I agree it cannot serve N2 and that its names alone do not support a join."
+    }
+  ],
+  "overrides": [
+    {
+      "source_id": "link.uci_360",
+      "reason": "The memo rates N1 as met with conditions. I override that to partially met: the UCI file has reference NO2 only, no PM2.5 column, and a single road-level device. It supports method building for NO2, not the pollutant need as written."
+    }
+  ],
+  "traced_conclusion": {
+    "source_id": "link.uci_360",
+    "record_field": "temporal.end",
+    "could_change_if": "If the dataset notes' end date (February 2005) is correct rather than the record's 2005-04-04, the prototype window is short by about two months and the coverage fraction for the prototype falls below 95%, which would make the source partial."
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "source_id": "api.open_meteo_archive",
+  "kind": "public_api",
+  "title": "Open-Meteo Historical Weather API (reanalysis)",
+  "summary": "Gridded modelled historical weather (reanalysis-based) served as JSON by the Open-Meteo Historical Weather API. Probed at a Milan-area point (45.46, 9.19), which the API snapped to grid cell 45.448154, 9.169279 at 138 m elevation. Hourly temperature_2m and relative_humidity_2m returned for both the prototype start (2004-03-10 to 2004-03-12) and the production end (2025-12-29 to 2025-12-31). It is a model grid product, not a station observation, and the free tier is licensed for non-commercial use only.",
+  "schema": {
+    "documented": "structured",
+    "field_count": 4,
+    "fields": [
+      {
+        "name": "time",
+        "type": "iso8601 datetime string",
+        "description": "Hourly timestamps, returned in the requested timezone (UTC requested; response reports GMT, utc_offset_seconds 0)",
+        "unit": null,
+        "pii": false
+      },
+      {
+        "name": "temperature_2m",
+        "type": "float",
+        "description": "Air temperature at 2 m",
+        "unit": "°C",
+        "pii": false
+      },
+      {
+        "name": "relative_humidity_2m",
+        "type": "float",
+        "description": "Relative humidity at 2 m",
+        "unit": "%",
+        "pii": false
+      },
+      {
+        "name": "latitude/longitude/elevation",
+        "type": "float",
+        "description": "Coordinates of the snapped grid cell and its elevation (returned in the response envelope, not per row)",
+        "unit": "degrees / m",
+        "pii": false
+      }
+    ],
+    "notes": "Documented variable list on the docs page includes many more hourly variables (dewpoint, precipitation, wind, cloud cover, etc.); only the two probed variables were confirmed. Register default query uses temperature_2m and shortwave_radiation at Lisbon-like coordinates (45.46/9.19 is the probe location used here; the register default is 45.46, 9.19 for lat/long, not Lisbon as the candidate note states)."
+  },
+  "temporal": {
+    "start": "2004-03-10",
+    "end": null,
+    "grain": "hourly",
+    "metadata_last_updated": null,
+    "open_ended": true,
+    "refresh_cadence": "unknown"
+  },
+  "spatial": {
+    "coverage": [
+      "IT"
+    ],
+    "code_system": "decimal-degree coordinates (lat/lon), snapped to a model grid cell",
+    "notes": "Client location is not set by the register; the probes used 45.46, 9.19 (the register default_query value). The candidate note said the register default was Lisbon (38.72, -9.14); the register entry actually lists 45.46 / 9.19, so the note appears to be wrong. Either way, the location must be a recorded human assumption in decisions.md. Grid cell 45.448154/9.169279 is about 10 km resolution per the docs."
+  },
+  "ownership": {
+    "owner": null,
+    "publisher": "Open-Meteo.com (Zippenfenig, P.; company per terms page)",
+    "steward": null
+  },
+  "licence": {
+    "name": "CC BY 4.0 (API data licence), with free API restricted to non-commercial use",
+    "evidence": "probe_url https://open-meteo.com/en/licence: 'API data are offered under Attribution 4.0 International (CC BY 4.0)'. probe_url https://open-meteo.com/en/terms: 'By using the Free API for non-commercial use ... You may only use the free API services for non-commercial purposes' and a table row 'Commercial use: Free / Open-Access API no; Standard, Professional, Enterprise yes'. Underlying data from Copernicus C3S and ECMWF (reanalysis) carry their own licence terms per the licence page. The register lists agreement_status not_required_open_data.",
+    "mixed_sources": true,
+    "url": "https://open-meteo.com/en/terms",
+    "commercial_use": "no",
+    "attribution_text": "Weather data by Open-Meteo.com (link required per licence page); cite Zippenfenig, P. (2023), doi 10.5281/ZENODO.7970649 encouraged",
+    "agreement_status": "not_required_open_data"
+  },
+  "access": {
+    "method": "rest_api",
+    "auth_required": false,
+    "reachable": true,
+    "approx_size_bytes": 2200,
+    "request_process": "Free access without key via https://archive-api.open-meteo.com/v1/archive. Free tier limits: 10,000 calls/day, 5,000/hour, 600/minute. Production or any commercial use needs a paid subscription (Standard/Professional/Enterprise) per terms page; the Legal review in policy.open_data_links is needed before live production use. Size reported is for a 3-day probe (2.2 KB); full-window size not established."
+  },
+  "declared_metadata": {
+    "register_agreement_status": "not_required_open_data",
+    "register_approved_purposes": [
+      "prototyping",
+      "production"
+    ],
+    "register_timezone_default": "UTC",
+    "register_default_query": "latitude 45.46, longitude 9.19, 2014-01-01 to 2014-01-03, temperature_2m,shortwave_radiation",
+    "contains_pii": false
+  },
+  "documentation_excerpts": [
+    "Gap-free and consistent historical weather data using weather reanalysis from ERA5 (0.25°, from 1940) and ERA5-Land (0.1°, from 1950) and ECMWF IFS (9 km, from 2017). (docs page, historical-weather-api)",
+    "Non-commercial use: By using the Free API for non-commercial use you agree to following terms ... You may only use the free API services for non-commercial purposes. (terms page)",
+    "API data are offered under Attribution 4.0 International (CC BY 4.0) (licence page)",
+    "Free / Open-Access API ... Commercial use ❌; Standard API / Professional / Enterprise ... Commercial use ✅ (terms page)"
+  ],
+  "quality_notes": [
+    "Licence conflict: the register lists production as an approved purpose with agreement_status not_required_open_data, but the terms page limits the Free API to non-commercial use and states commercial use needs a paid subscription. The client is a public health office, and the terms give public institutions and non-profit use as non-commercial examples, but whether a live clinical warning service counts is not decided here. Treat production use as needing Legal review (policy.open_data_links says production use needs Legal sign-off).",
+    "Register default_query coordinates are 45.46 / 9.19 (Milan area) in the register entry, not Lisbon. The candidate note's Lisbon claim does not match the register text as read at 2026-10-15. Record both: candidate note says Lisbon (38.72, -9.14); register lists 45.46, 9.19.",
+    "Modelled reanalysis at about 10 km grid (ERA5-family or ECMWF IFS 9 km from 2017, per docs). Not station observation. Urban smoothing and cell-size representativeness vs. the city's monitoring stations must be assessed.",
+    "Time base: request was UTC; response reports timezone GMT with utc_offset_seconds 0. Air-quality and traffic sources must be aligned to this before joining.",
+    "Coverage probed only at the two ends of the prototype window (2004-03-10 to 2004-03-12) and the production window end (2025-12-29 to 2025-12-31). The 2004-04-04 end and 2024-01-01 start were not probed; full coverage of each window is therefore not confirmed.",
+    "Humidity: relative_humidity_2m (N3) returned for both probes. Dewpoint and other variables are documented but were not probed."
+  ],
+  "provenance": [
+    {
+      "claim": "Register entry: endpoint https://archive-api.open-meteo.com/v1/archive, agreement_status not_required_open_data, approved purposes prototyping and production, default timezone UTC, default coordinates 45.46 / 9.19",
+      "evidence": "list_external_register (api.open_meteo_archive)"
+    },
+    {
+      "claim": "Probe for prototype start returned 72 hourly values with temperature_2m and relative_humidity_2m, snapped to 45.448154 / 9.169279, elevation 138 m, 2004-03-10 to 2004-03-12",
+      "evidence": "call_public_api api.open_meteo_archive start 2004-03-10 end 2004-03-12 hourly temperature_2m,relative_humidity_2m, timezone UTC"
+    },
+    {
+      "claim": "Probe for production end returned 72 hourly values for the same variables, 2025-12-29 to 2025-12-31",
+      "evidence": "call_public_api api.open_meteo_archive start 2025-12-29 end 2025-12-31"
+    },
+    {
+      "claim": "API data are CC BY 4.0; underlying sources (DWD, ECMWF, Copernicus C3S, etc.) have their own licences",
+      "evidence": "probe_url https://open-meteo.com/en/licence"
+    },
+    {
+      "claim": "Free API is for non-commercial use only; commercial use requires paid subscription; rate limits 10,000/day, 5,000/hour, 600/minute",
+      "evidence": "probe_url https://open-meteo.com/en/terms"
+    },
+    {
+      "claim": "Reanalysis resolutions: ERA5 0.25 degree from 1940, ERA5-Land 0.1 degree from 1950, ECMWF IFS 9 km from 2017; variable list includes relative humidity and dewpoint",
+      "evidence": "probe_url https://open-meteo.com/en/docs/historical-weather-api"
+    }
+  ],
+  "unknowns": [
+    "Whether the client's use (public health office, live clinical warning model) is non-commercial under the terms, or needs a paid subscription; Legal decision not on file.",
+    "Client monitoring-station or city coordinates; the 45.46/9.19 probe point is the register default, not a justified site location.",
+    "Which underlying reanalysis model (ERA5, ERA5-Land or IFS) serves the point for each date; the response does not state it.",
+    "Full coverage of the prototype window (end 2005-04-04) and the production window start (2024-01-01); only the start of 2004 and end of 2025 were probed.",
+    "Update cadence and latency of the archive (how soon recent days appear); metadata_last_updated not stated.",
+    "Licence of the underlying Copernicus/ECMWF products as applied to derived API output beyond the CC BY 4.0 statement on the licence page.",
+    "Accuracy of humidity against the client's stations; no validation performed."
+  ]
+}

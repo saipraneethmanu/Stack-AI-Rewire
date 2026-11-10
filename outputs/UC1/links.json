@@ -1,0 +1,43 @@
+[
+  {
+    "url": "https://archive.ics.uci.edu/dataset/360/air+quality",
+    "need_ids": [
+      "N1"
+    ],
+    "target_windows": [
+      "prototype"
+    ],
+    "note": "Public hourly air-quality readings from an Italian city, 2004-2005. Check the city, the period and the missing-value coding."
+  },
+  {
+    "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sdg_11_52?format=JSON&lang=EN&geo=IT",
+    "need_ids": [
+      "N6"
+    ],
+    "target_windows": [
+      "prototype",
+      "production"
+    ],
+    "note": "Eurostat yearly deaths linked to PM2.5, Italy. National context only."
+  },
+  {
+    "url": "https://catalog.data.gov/dataset/open-air-chicago-hour-aggregations",
+    "need_ids": [
+      "N1"
+    ],
+    "target_windows": [
+      "prototype"
+    ],
+    "note": "Hourly air-quality sensor data from a US city, found while searching for more hourly data."
+  },
+  {
+    "url": "https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2024/",
+    "need_ids": [
+      "N2"
+    ],
+    "target_windows": [
+      "production"
+    ],
+    "note": "Revised at Step 2b. Hourly vehicle counts per road loop counter, Bologna, 2024 only (page licence CC BY 4.0). Not a Valdena source: different city and 2024 only, so it cannot fill the 2025 part of the window. Accepted only to test the traffic-count path through the pipeline; it must not be read as client traffic."
+  }
+]
