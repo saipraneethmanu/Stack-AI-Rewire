@@ -1,10 +1,9 @@
 """Licence and structured-metadata extraction from dataset landing pages."""
 from __future__ import annotations
 
+import html as html_lib
 import json
 import re
-
-from .base import NotImplementedTool
 
 
 def jsonld_datasets(html: str) -> list[dict]:
@@ -54,22 +53,156 @@ def summarise_jsonld_dataset(d: dict) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# LEARNER TODO (G1): find the licence of ANY dataset from its landing page
+# G1: find the licence of ANY dataset from its landing page
 # ---------------------------------------------------------------------------
-# Without this, every dataset link ends up LIC-UNKNOWN (a blocker) and verdicts are wrong.
-#
-# Contract (tests/test_learner_gaps.py::test_g1_* checks it):
-#   extract_licence(html: str, jsonld: list[dict] | None = None) -> dict with EXACTLY these keys
-#     licence_name : normalised name, one of e.g. "CC BY 4.0", "CC BY-SA 4.0", "CC BY-NC 4.0", "CC BY-NC-SA 4.0",
-#                    "CC BY-ND 4.0", "CC0 1.0", "ODbL 1.0", "OGL v3.0", "MIT", "Apache-2.0"; None if not found
-#                    or if the page says the licence is unknown/unspecified
-#     licence_url  : the licence URL you found, or None
-#     snippet      : the text or JSON-LD value you read it from (<= 400 chars), or None
-#     found_in     : "json-ld" | "link" | "text" | None
-#
-# Order of evidence: JSON-LD "license" (string URL, or {"name", "url"}) first; then links to
-# creativecommons.org / opendatacommons.org / nationalarchives.gov.uk (OGL) / choosealicense.com;
-# then sentences such as "licensed under a Creative Commons Attribution 4.0 International (CC BY 4.0) license".
-# jsonld defaults to jsonld_datasets(html) when None. Never guess: return None values when unsure.
+# Order of evidence: schema.org JSON-LD "license" first, then links to licence pages, then licence
+# sentences in the visible text. A licence is only named when a pattern recognises it. "Unknown" and
+# "unspecified" are treated as no licence, but the JSON-LD value is kept as the snippet, so the
+# record shows what the page actually said.
+
+_SNIPPET_MAX = 400
+
+# CC licence URLs: creativecommons.org/licenses/by-nc-sa/4.0/...
+_CC_URL = re.compile(r"creativecommons\.org/licenses/((?:by)(?:-(?:nc|sa|nd))*)/(\d\.\d)", re.I)
+# CC names: "CC BY-NC-SA 4.0", "CC-BY 4.0", "cc by-nc 4.0"
+_CC_NAME = re.compile(r"\bCC[ -]?(BY((?:[ -](?:NC|SA|ND))*))[ -]?(\d\.\d)\b", re.I)
+# Long CC names: "Creative Commons Attribution-NonCommercial 4.0"
+_CC_LONG = re.compile(
+    r"Creative Commons\s+Attribution((?:-(?:NonCommercial|ShareAlike|NoDerivatives))*)\s+(\d\.\d)", re.I)
+_LONG_TO_CODE = {"noncommercial": "NC", "sharealike": "SA", "noderivatives": "ND"}
+_CC0 = re.compile(r"creativecommons\.org/publicdomain/zero/1\.0|choosealicense\.com/licenses/cc0|\bCC0(?:[ -]?1\.0)?\b", re.I)
+_ODBL = re.compile(r"opendatacommons\.org/licenses/odbl|^\s*ODbL(?:\s*1\.0)?\s*$", re.I)
+_OGL = re.compile(r"nationalarchives\.gov\.uk/doc/open-government-licen[cs]e|Open Government Licen[cs]e", re.I)
+_OGL_VERSION = re.compile(r"version/(\d)|\bv\.?\s?(\d)(?:\.(\d))?", re.I)
+_MIT = re.compile(r"choosealicense\.com/licenses/mit\b|^\s*MIT(?: License)?\s*$", re.I)
+_APACHE = re.compile(r"choosealicense\.com/licenses/apache-2\.0|^\s*Apache[- ]2\.0(?: License)?\s*$", re.I)
+
+# Sentences in visible text that name a licence. Matched text is passed to normalise_licence().
+_LICENCE_SENTENCE = re.compile(
+    r"Creative Commons\s+Attribution[^.;()]{0,60}?\d\.\d"
+    r"|\bCC[ -]?BY(?:[ -](?:NC|SA|ND))*[ -]?\d\.\d\b"
+    r"|\bCC0(?:[ -]?1\.0)?\b"
+    r"|Open Government Licen[cs]e(?:\s+v\.?\s?\d(?:\.\d)?)?"
+    r"|\bODbL(?:\s*1\.0)?\b",
+    re.I,
+)
+_ANCHOR = re.compile(r"""(?is)<a\s[^>]*?href=["']([^"']+)["'][^>]*>(.*?)</a>""")
+_LICENCE_URL_ANYWHERE = re.compile(
+    r"""https?://[^\s"'<>]*(?:creativecommons\.org/licenses/|creativecommons\.org/publicdomain/zero/|"""
+    r"""opendatacommons\.org/licenses/|nationalarchives\.gov\.uk/doc/open-government-licen[cs]e)[^\s"'<>]*""",
+    re.I,
+)
+
+
+def normalise_licence(text: str | None) -> str | None:
+    """Map a licence name or URL to its short canonical name, or None when it is not a known licence."""
+    if not text:
+        return None
+    t = html_lib.unescape(str(text)).strip()
+
+    m = _CC_URL.search(t)
+    if m:
+        return f"CC {m.group(1).upper()} {m.group(2)}"
+    if _CC0.search(t):
+        return "CC0 1.0"
+    if _ODBL.search(t):
+        return "ODbL 1.0"
+    if _OGL.search(t):
+        v = _OGL_VERSION.search(t)
+        if v:
+            major = v.group(1) or v.group(2)
+            minor = v.group(3) or "0"
+            return f"OGL v{major}.{minor}"
+        return "OGL"
+    if _MIT.search(t):
+        return "MIT"
+    if _APACHE.search(t):
+        return "Apache-2.0"
+    m = _CC_NAME.search(t)
+    if m:
+        return f"CC {m.group(1).upper().replace(' ', '-')} {m.group(3)}"
+    m = _CC_LONG.search(t)
+    if m:
+        codes = [_LONG_TO_CODE[part.lower()] for part in re.findall(r"-(NonCommercial|ShareAlike|NoDerivatives)", m.group(1), re.I)]
+        return "CC " + "-".join(["BY", *codes]) + f" {m.group(2)}"
+    return None
+
+
+def _clip(text: str) -> str:
+    return " ".join(text.split())[:_SNIPPET_MAX]
+
+
+def _found(name, url, snippet, found_in) -> dict:
+    return {"licence_name": name, "licence_url": url, "snippet": _clip(snippet) if snippet else None, "found_in": found_in}
+
+
+def _plain_text(html: str) -> str:
+    text = re.sub(r"(?is)<(script|style)[^>]*>.*?</\1>", " ", html)
+    text = re.sub(r"<[^>]+>", " ", text)
+    return " ".join(html_lib.unescape(text).split())
+
+
 def extract_licence(html: str, jsonld: list[dict] | None = None) -> dict:
-    raise NotImplementedTool("extract_licence is a learner TODO (G1). See discovery_agent/tools/licence.py.")
+    """Return the licence a landing page declares, with the evidence it came from.
+
+    The result always has exactly the keys licence_name, licence_url, snippet and found_in.
+    A value that cannot be recognised is returned as None, never guessed.
+    """
+    if jsonld is None:
+        jsonld = jsonld_datasets(html)
+
+    # 1. schema.org JSON-LD. If the value is recognised, stop. If it says "Unknown", keep it as the
+    #    evidence (found_in json-ld, name None) and still look at the page for a clearer statement.
+    unknown_evidence = None
+    for dataset in jsonld:
+        value = dataset.get("license")
+        if isinstance(value, list):
+            value = value[0] if value else None
+        if value is None or value == "":
+            continue
+        if isinstance(value, dict):
+            name, url = str(value.get("name") or ""), str(value.get("url") or "")
+        else:
+            text = str(value)
+            name, url = ("", text) if text.startswith("http") else (text, "")
+        licence = normalise_licence(name) or normalise_licence(url)
+        shown = name or url
+        if licence:
+            return _found(licence, url or None, shown, "json-ld")
+        if unknown_evidence is None:
+            unknown_evidence = _found(None, url or None, shown, "json-ld")
+
+    # 2. Links to a licence page (creativecommons.org, opendatacommons.org, nationalarchives.gov.uk ...)
+    for href, anchor_html in _ANCHOR.findall(html):
+        licence = normalise_licence(href)
+        if licence:
+            anchor_text = _plain_text(anchor_html) or href
+            return _found(licence, href, anchor_text, "link")
+
+    # 3. Licence sentences in the visible text.
+    plain = _plain_text(html)
+    for match in _LICENCE_SENTENCE.finditer(plain):
+        licence = normalise_licence(match.group(0))
+        if licence:
+            start = max(0, match.start() - 80)
+            return _found(licence, None, plain[start:match.end() + 120], "text")
+
+    # 4. Markup. Portals such as OpenDataSoft keep their metadata as HTML-escaped JSON inside element attributes
+    #    (for example &quot;license&quot;: &quot;CC BY 4.0&quot;). Tag stripping removes those attributes, so search
+    #    the unescaped markup for licence URLs and licence statements as well.
+    markup = html_lib.unescape(html)
+    for url in _LICENCE_URL_ANYWHERE.findall(markup):
+        licence = normalise_licence(url)
+        if licence:
+            return _found(licence, url, url, "text")
+    for match in _LICENCE_SENTENCE.finditer(markup):
+        licence = normalise_licence(match.group(0))
+        if licence:
+            start = max(0, match.start() - 80)
+            window = _plain_text(markup[start:match.end() + 120])
+            return _found(licence, None, window, "text")
+
+    # Nothing recognised: report the JSON-LD "Unknown" evidence if there was any, otherwise all None.
+    if unknown_evidence is not None:
+        return unknown_evidence
+    return {"licence_name": None, "licence_url": None, "snippet": None, "found_in": None}

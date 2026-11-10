@@ -56,8 +56,99 @@ def datapackage_summary(package: dict, field_filter: list[str] | None = None) ->
 # Hint: dimension categories look like
 #   dataset["dimension"]["geo"]["category"] = {"index": {"UK": 0, "FR": 1}, "label": {"UK": "United Kingdom", ...}}
 #   "index" can also be a list of codes.
+_ISO_3166_ALPHA2 = frozenset(
+    """AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ
+    CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR
+    GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO
+    JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR
+    MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO
+    RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV
+    TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS YE YT ZA ZM ZW""".split()
+)
+
+
+def _category_codes(category: dict) -> list[str]:
+    """Codes of a JSON-stat category in index order. The index is a list, or a dict of code -> position."""
+    index = category.get("index", [])
+    if isinstance(index, dict):
+        return [code for code, _ in sorted(index.items(), key=lambda item: item[1])]
+    return list(index)
+
+
+def _present_values(value) -> list:
+    """The non-null entries of a JSON-stat value array. It is a list, or a dict keyed by cell position."""
+    if isinstance(value, dict):
+        return [v for v in value.values() if v is not None]
+    if isinstance(value, list):
+        return [v for v in value if v is not None]
+    return []
+
+
 def jsonstat_summary(dataset: dict) -> dict:
-    raise NotImplementedTool("jsonstat_summary is a learner TODO (G3). See discovery_agent/tools/formats.py.")
+    """Summarise a JSON-stat 2.0 dataset: dimensions, time and geo coverage, and missing cells.
+
+    A missing cell is never counted as a zero. It is reported in missing_cells and as MISSING_CELLS.
+    A gap in consecutive years of the time index is reported as TIME_GAPS, in addition to the warnings in the contract.
+    """
+    dimensions_def = dataset.get("dimension", {}) or {}
+    order = list(dataset.get("id") or dimensions_def.keys())
+    sizes = list(dataset.get("size") or [])
+
+    dimensions = []
+    for position, dim_id in enumerate(order):
+        category = (dimensions_def.get(dim_id) or {}).get("category", {}) or {}
+        labels = category.get("label", {}) or {}
+        codes = _category_codes(category)
+        dimensions.append({
+            "id": dim_id,
+            "size": sizes[position] if position < len(sizes) else len(codes),
+            "labels": [f"{code}: {labels[code]}" if code in labels else code for code in codes[:10]],
+        })
+
+    time_category = (dimensions_def.get("time") or {}).get("category", {}) if "time" in order else None
+    time = None
+    if time_category is not None:
+        values = sorted(_category_codes(time_category))
+        time = {"first": values[0] if values else None, "last": values[-1] if values else None, "values": values}
+
+    geo_codes = _category_codes((dimensions_def.get("geo") or {}).get("category", {})) if "geo" in order else []
+
+    expected_cells = 1
+    for size in sizes:
+        expected_cells *= int(size)
+    value_count = len(_present_values(dataset.get("value")))
+    missing_cells = expected_cells - value_count
+
+    status = dataset.get("status")
+    status_values = [s for s in (status.values() if isinstance(status, dict) else (status or [])) if s is not None]
+    status_counts: dict[str, int] = {}
+    for code in status_values:
+        status_counts[code] = status_counts.get(code, 0) + 1
+
+    warnings = []
+    if missing_cells > 0:
+        warnings.append("MISSING_CELLS")
+    if any(code not in _ISO_3166_ALPHA2 for code in geo_codes):
+        warnings.append("NON_ISO_GEO_CODES")
+    # A year that is absent from the time index is a gap in the series, even when every listed cell is present.
+    if time and time["values"] and all(v.isdigit() and len(v) == 4 for v in time["values"]):
+        years = [int(v) for v in time["values"]]
+        if any(later - earlier > 1 for earlier, later in zip(years, years[1:])):
+            warnings.append("TIME_GAPS")
+
+    return {
+        "label": dataset.get("label"),
+        "updated": dataset.get("updated"),
+        "source": dataset.get("source"),
+        "dimensions": dimensions,
+        "time": time,
+        "geo_codes": geo_codes,
+        "expected_cells": expected_cells,
+        "value_count": value_count,
+        "missing_cells": missing_cells,
+        "status_counts": status_counts,
+        "warnings": warnings,
+    }
 
 
 # ---------------------------------------------------------------------------
