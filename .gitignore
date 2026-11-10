@@ -28,3 +28,6 @@ venv/
 
 # Assignment briefs are reference material, not part of the submission
 *.docx
+
+# Local harness settings, not part of the submission
+.claude/settings.local.json

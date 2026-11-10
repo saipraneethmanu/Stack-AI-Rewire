@@ -206,3 +206,42 @@ commands and checks. The test: someone else gives the updated skill to a fresh C
 with a **different use case** (a new `use_cases/<ID>_*.json`, brief and internal estate) and gets
 a comparable result. If a step only works for UC1 or UC2, or is too vague to act on, revise it.
 If asked to help write those steps, describe what the learner actually did, not a generic template.
+
+---
+
+## Step 3: Profile and rule-check
+
+Prerequisites: Steps 0–2b done, `outputs/<ID>/candidates.json` present. For UC1, `outputs/UC1/gate_decisions.json` covers every link in `outputs/UC1/links.json`. Run every Python command through `uv run --no-project --with-requirements requirements.txt`.
+
+1. Profile every accepted source:
+   `python -m discovery_agent run --use-case <ID> --from-stage profile --stop-after profile --links-file outputs/<ID>/links.json --no-input`
+   (UC2 has no links file: drop `--links-file`.) Expect one `profiler__<source_id>` line per source in the console and a `records/<source_id>.json` for each.
+2. Check each `outputs/<ID>/records/*.json` in this order:
+   - `provenance` lists a tool call, URL, catalog field or wiki page for each claim. A claim with no provenance is an error.
+   - `licence.name` and `licence.evidence` agree with the page. If the record says unknown, open the page yourself with `tool inspect_dataset_link` and read the licence output before accepting "unknown".
+   - `temporal.start`, `temporal.end`, `temporal.grain`. An open-ended source has `end` null.
+   - `unknowns` lists every field the pipeline could not establish. Nothing in it may be filled from typical values.
+   - `documentation_excerpts` against `sample_findings`: sentinel values such as -200 or 0 used as missing must be called out in `quality_notes`.
+3. Read `outputs/<ID>/rule_flags.json` (deterministic rules) and the warnings in `run_summary.json`. A warning that a rule was skipped means the rule is not implemented. Fix it before assessing.
+4. When a record is wrong, fix the cause, not the record. A licence the tool missed is a tool fault (`discovery_agent/tools/licence.py`): fix the extractor, then re-profile that one source with `--from-stage profile --stop-after profile --only <source_id>`. A profiler copying contact details is a prompt fault (`discovery_agent/prompts/_shared_rules.md`). Never edit a file under `outputs/<ID>/records/`.
+
+## Step 4: Assess and draft the memo
+
+1. Assess the saved records and draft the memo:
+   `python -m discovery_agent run --use-case <ID> --from-stage assess --links-file outputs/<ID>/links.json --no-input`
+   This writes `risk_assessment.json`, `discovery_results.json` and `feasibility_memo.md`.
+2. Read `risk_assessment.json` against the calibration rules in `discovery_agent/prompts/risk_assessor.md`. For each source, check that the verdict follows the rules: a blocker without a named owner is not feasible; a major flag gives one condition per window; a minor flag does not change the verdict alone.
+3. Every dismissed rule flag must have a reason in `dismissed_rule_flags`. A rule flag that disappears without a dismissal is an error.
+4. When you change a rule, prompt or tool, re-run from the stage that uses it (`--from-stage assess` for prompt and rule changes, `--from-stage profile --only` for extractor changes). Record each verdict that moved, with before and after, in `outputs/artifacts/decisions.md`. Run-to-run variance in the Risk Assessor is real: separate it from the effect of your change by re-running the unchanged stage once.
+5. Read `feasibility_memo.md` against `discovery_results.json`. Each verdict must name a source id and a record field. Check the executive summary against the need-coverage table: any "met" must have a source that is `feasible` or `feasible_with_conditions` for every target window.
+
+## Step 5: Evaluate and hand off
+
+1. Self-check until it lists no problems:
+   `python -m discovery_agent check <ID>`
+   Save the output: `python -m discovery_agent check <ID> > outputs/artifacts/check_<ID>.json`.
+   The check reads `discovery_results.json`, the memo and the records for email-like values. A contact mailbox in a record is a finding to fix at the prompt, not a value to hide.
+2. Confirm that no secret is in the submission. List files that contain the gateway token value without printing them: `grep -rlF "$ANTHROPIC_AUTH_TOKEN" --exclude-dir=.git --exclude-dir=.venv --exclude-dir=.cache .`. The result must be empty except for files that do not ship (`.env`). Never print the token itself.
+3. Confirm the outputs are generated, not hand-edited: `outputs/<ID>/` holds only pipeline output and templates you filled in. `config/settings.json` caps and the request budget are unchanged from `starter-code`.
+4. Write the review (`outputs/artifacts/review_<ID>.md`: agreements, overrules with reasons, a verdict per link, the gate decision), the signoff (`outputs/<ID>/signoff.json`, traced to one record field), and the walkthrough (`outputs/artifacts/walkthrough.md`).
+5. Hand off with this list in `outputs/artifacts/`: `decisions.md`, `step0_checks.md`, `check_<ID>.json` for each use case, `review_<ID>.md` for each use case, `walkthrough.md`, `pytest_before.txt` and `pytest_after.txt`.
