@@ -1,0 +1,30 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.pytest_cache/
+
+# Virtual environments
+.venv
+venv/
+
+# Secrets: never commit the gateway key
+.env
+*.env
+
+# Caches (HTTP cache is rebuilt by every run)
+.cache/
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+
+# Windows download markers left by the file copy, not project files
+*:Zone.Identifier
+
+# Assignment briefs are reference material, not part of the submission
+*.docx
